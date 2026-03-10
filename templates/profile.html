@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Your Profile</h1>
+</div>
+
+<div class="layout-grid">
+    <div class="form-section card">
+        <h3>Edit Profile</h3>
+        <p style="margin-bottom: 1.5rem; color: var(--text-secondary); font-size: 0.9rem;">
+            Update your personal information and biography.
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+            
+            <p style="margin-bottom: 1rem;">
+                <label for="{{ form.full_name.id_for_label }}" style="display: block; font-weight: 500; margin-bottom: 0.5rem;">Full Name:</label>
+                {{ form.full_name }}
+            </p>
+
+            <p style="margin-bottom: 1rem;">
+                <label for="{{ form.email.id_for_label }}" style="display: block; font-weight: 500; margin-bottom: 0.5rem;">Email Address:</label>
+                {{ form.email }}
+            </p>
+
+            <p style="margin-bottom: 1rem;">
+                <label for="{{ form.bio.id_for_label }}" style="display: block; font-weight: 500; margin-bottom: 0.5rem;">Short Bio / About:</label>
+                {{ form.bio }}
+            </p>
+            
+            <button type="submit" class="btn btn-primary" style="margin-top: 0.5rem;">Save Profile</button>
+        </form>
+    </div>
+
+    <div class="list-section">
+        <div class="card" style="background-color: var(--bg-color); text-align: center; padding: 2rem;">
+            <div class="avatar-btn" style="width: 80px; height: 80px; font-size: 2.5rem; margin: 0 auto 1.5rem auto; cursor: default;">
+                <span class="avatar-initial">{{ user.username.0|upper }}</span>
+            </div>
+            
+            <h3 style="color: var(--primary-color); margin-bottom: 0.5rem;">@{{ user.username }}</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 1rem;">Joined on {{ user.date_joined|date:"F j, Y" }}</p>
+            
+            {% if profile.bio %}
+            <div style="text-align: left; background-color: white; padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border-color); font-size: 0.95rem; color: var(--text-primary); line-height: 1.6;">
+                <strong>About me:</strong><br>
+                {{ profile.bio|linebreaksbr }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

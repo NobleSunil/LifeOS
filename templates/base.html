@@ -1,0 +1,110 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeOS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>LifeOS</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    {% if user.is_authenticated %}
+                    
+                    {% if user.is_superuser %}
+                    <li style="margin-top: 1.5rem;"><a href="{% url 'admin_dashboard' %}" style="color: var(--primary-color); font-weight: 600;">🛡️ Admin Dashboard</a></li>
+                    {% else %}
+                    <li><a href="{% url 'dashboard' %}">🏠 Dashboard</a></li>
+                    <li><a href="{% url 'goals_list' %}">🎯 Goals</a></li>
+                    <li><a href="{% url 'habits_list' %}">🔁 Habits</a></li>
+                    <li><a href="{% url 'tasks_list' %}">✅ Tasks</a></li>
+                    <li><a href="{% url 'reflections_list' %}">📝 Reflections</a></li>
+                    {% endif %}
+
+
+                    {% else %}
+                    <li><a href="{% url 'login' %}">🔑 Login</a></li>
+                    <li><a href="{% url 'register' %}">📝 Register</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Navigation / Header -->
+            {% if user.is_authenticated %}
+            <header class="top-nav">
+                <div class="top-nav-right">
+                    <button class="nav-icon-btn" aria-label="Notifications">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                    </button>
+                    <div class="profile-menu-container">
+                        <button class="avatar-btn" id="avatarBtn" aria-label="Profile Menu">
+                            <!-- Generate initials from username, e.g. 'admin' -> 'A' -->
+                            <span class="avatar-initial">{{ user.username.0|upper }}</span>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div class="profile-dropdown" id="profileDropdown">
+                            <div class="dropdown-header">
+                                <span class="dropdown-username">👤 {{ user.username }}</span>
+                            </div>
+                            <div class="dropdown-body">
+                                {% if not is_admin_dashboard %}
+                                <a href="{% url 'profile_view' %}" class="dropdown-item">👤 Profile</a>
+                                <a href="{% url 'reports_page' %}" class="dropdown-item">📊 Generate Report</a>
+                                {% endif %}
+                                <form action="{% url 'logout' %}" method="post" style="margin: 0;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item logout-dropdown-btn">🚪 Logout</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            {% endif %}
+
+            {% block content %}
+            {% endblock %}
+        </main>
+    </div>
+
+    <!-- Dropdown Toggle Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const avatarBtn = document.getElementById('avatarBtn');
+            const dropdown = document.getElementById('profileDropdown');
+
+            if (avatarBtn && dropdown) {
+                // Toggle dropdown on click
+                avatarBtn.addEventListener('click', function(e) {
+                    e.stopPropagation(); // Prevent immediately closing
+                    dropdown.classList.toggle('active');
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!dropdown.contains(e.target) && e.target !== avatarBtn) {
+                        dropdown.classList.remove('active');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

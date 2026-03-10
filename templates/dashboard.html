@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="greeting-section">
+        <h1 style="color: var(--primary-color); font-size: 1.8rem; margin-bottom: 0.25rem;">
+            {{ greeting_time }}, {{ display_name }} <span style="font-family: 'Segoe UI Emoji', sans-serif;">👋</span>
+        </h1>
+        <p style="color: var(--text-secondary); font-size: 0.95rem;">Here is a summary of your daily progress.</p>
+    </div>
+
+</div>
+
+<div class="metrics-grid">
+    <div class="card metric-card">
+        <h3>⚡ Consistency Score</h3>
+        <p class="metric-value">{{ consistency_score }}%</p>
+    </div>
+    <div class="card metric-card">
+        <h3>🎯 Total Goals</h3>
+        <p>{{ completed_goals }} / {{ total_goals }} Completed</p>
+    </div>
+    <div class="card metric-card">
+        <h3>✅ Completed Tasks</h3>
+        <p>{{ completed_tasks }} / {{ total_tasks }} Completed</p>
+    </div>
+    <div class="card metric-card">
+        <h3>🔁 Habit Completion</h3>
+        <p>{{ completed_habits_today }} / {{ total_habits }} Done</p>
+    </div>
+</div>
+
+<div class="chart-container card mt-20">
+    <h2>7-Day Consistency Trend</h2>
+    <canvas id="consistencyChart"></canvas>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    Chart.defaults.color = '#71717A';
+    Chart.defaults.borderColor = '#EAE6DF';
+    Chart.defaults.font.family = "'Outfit', sans-serif";
+    
+    const ctx = document.getElementById('consistencyChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ chart_labels|safe }},
+            datasets: [{
+                label: 'Consistency Score (%)',
+                data: {{ chart_data|safe }},
+                borderColor: '#4f46e5',
+                backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

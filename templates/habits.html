@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Habit Tracker</h1>
+</div>
+
+<div class="layout-grid">
+    <div class="form-section card">
+        <h3>Add New Habit</h3>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Save Habit</button>
+        </form>
+    </div>
+    
+    <div class="list-section">
+        {% for habit in habits %}
+        <div class="card item-card {% if habit.is_completed_today %}completed{% endif %}">
+            <div class="item-content">
+                <h4>{{ habit.habit_name }}</h4>
+                <small>Added: {{ habit.created_at|date:"M d, Y" }}</small>
+            </div>
+            <div class="item-actions">
+                <form action="{% url 'complete_habit' habit.id %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    {% if habit.is_completed_today %}
+                        <button type="submit" class="btn btn-warning btn-sm">Mark Undone Today</button>
+                    {% else %}
+                        <button type="submit" class="btn btn-success btn-sm">Done Today</button>
+                    {% endif %}
+                </form>
+                <form action="{% url 'delete_habit' habit.id %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <p>No habits tracked yet. Add one to get started!</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

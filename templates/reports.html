@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Generate Activity Report</h1>
+</div>
+
+<div class="layout-grid">
+    <div class="form-section card">
+        <h3>Report Parameters</h3>
+        <p style="margin-bottom: 1.5rem; color: var(--text-secondary); font-size: 0.9rem;">
+            Select a date range to download a summary of your completed goals, tasks, and habits. Note: You cannot generate reports for dates prior to your account creation date.
+        </p>
+
+        <form method="post" action="{% url 'reports_page' %}">
+            {% csrf_token %}
+            
+            {% if error_message %}
+            <div style="background-color: #fff1f2; color: var(--danger-color); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; border: 1px solid var(--danger-color); font-size: 0.9rem;">
+                <strong>Error:</strong> {{ error_message }}
+            </div>
+            {% endif %}
+
+            <p>
+                <label for="start_date">Start Date:</label>
+                <input type="date" id="start_date" name="start_date" required>
+            </p>
+
+            <p>
+                <label for="end_date">End Date:</label>
+                <input type="date" id="end_date" name="end_date" required>
+            </p>
+            
+            <button type="submit" class="btn btn-primary" style="margin-top: 0.5rem;">Generate CSV Report</button>
+        </form>
+    </div>
+
+    <!-- Right Side Information Panel -->
+    <div class="list-section">
+        <div class="card" style="background-color: var(--bg-color);">
+            <div class="item-content">
+                <h4 style="margin-bottom: 1rem; color: var(--primary-color);">What's in the report?</h4>
+                <ul style="list-style-type: none; padding-left: 0; color: var(--text-secondary);">
+                    <li style="margin-bottom: 0.75rem; display: flex; align-items: flex-start; gap: 0.5rem;">
+                        <span style="color: var(--success-color); font-weight: bold;">✓</span> 
+                        <span>Total <strong>Goals Completed</strong> within the selected timeframe.</span>
+                    </li>
+                    <li style="margin-bottom: 0.75rem; display: flex; align-items: flex-start; gap: 0.5rem;">
+                        <span style="color: var(--success-color); font-weight: bold;">✓</span> 
+                        <span>Total <strong>Tasks Completed</strong> within the selected timeframe.</span>
+                    </li>
+                    <li style="margin-bottom: 0.75rem; display: flex; align-items: flex-start; gap: 0.5rem;">
+                        <span style="color: var(--success-color); font-weight: bold;">✓</span> 
+                        <span>Total <strong>Habits Marked Done</strong> within the selected timeframe.</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

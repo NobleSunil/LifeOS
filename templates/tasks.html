@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Tasks</h1>
+</div>
+
+<div class="layout-grid">
+    <div class="form-section card">
+        <h3>Add New Task</h3>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Save Task</button>
+        </form>
+    </div>
+    
+    <div class="list-section">
+        {% for task in tasks %}
+        <div class="card item-card {% if task.status == 'Completed' %}completed{% endif %}">
+            <div class="item-content">
+                <h4>{{ task.title }}</h4>
+                <p>{{ task.description }}</p>
+                <small>
+                    Start: {% if task.start_date %}{{ task.start_date }}{% else %}Not specified{% endif %} | 
+                    Due: {{ task.due_date }} | Status: {{ task.status }}
+                </small>
+            </div>
+            <div class="item-actions">
+                {% if task.status == 'Pending' %}
+                <form action="{% url 'complete_task' task.id %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-sm">Complete</button>
+                </form>
+                {% endif %}
+                
+                <!-- edit button -->
+                <a href="{% url 'edit_task' task.id %}" class="btn btn-primary btn-sm" style="text-decoration:none; padding: 0.25rem 0.5rem; font-size: 0.875rem;">Edit</a>
+                
+                <form action="{% url 'delete_task' task.id %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <p>No tasks. You're all caught up!</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

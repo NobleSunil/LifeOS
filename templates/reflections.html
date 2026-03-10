@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Daily Reflections</h1>
+</div>
+
+<div class="layout-grid">
+    <div class="form-section card">
+        <h3>Write Today's Reflection</h3>
+        {% if error_message %}
+            <div class="alert alert-warning">{{ error_message }}</div>
+        {% endif %}
+        
+        {% if already_reflected %}
+            <p class="text-success" style="padding: 1rem; background-color: #dcfce7; color: #166534; border-radius: 0.5rem; border: 1px solid #bbf7d0;">
+                You've already written a reflection today. Great job!
+            </p>
+        {% else %}
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary">Save Reflection</button>
+            </form>
+        {% endif %}
+    </div>
+    
+    <div class="list-section">
+        <h3>Past Reflections</h3>
+        {% for reflection in reflections %}
+        <div class="card item-card">
+            <div class="item-content">
+                <h4>{{ reflection.date|date:"l, F j, Y" }}</h4>
+                <p>{{ reflection.content }}</p>
+            </div>
+            <div class="item-actions">
+                <a href="{% url 'edit_reflection' reflection.id %}" class="btn btn-primary btn-sm" style="text-decoration:none; padding: 0.25rem 0.5rem; font-size: 0.875rem;">Edit</a>
+                <form action="{% url 'delete_reflection' reflection.id %}" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this reflection?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <p>No reflections yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
