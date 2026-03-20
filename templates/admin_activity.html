@@ -1,0 +1,105 @@
+{% extends 'admin_base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold" style="color: var(--primary-color);">📈 Platform Activity — Last 30 Days</h2>
+</div>
+
+<div class="card border-0 shadow-sm p-4" style="border-radius: 12px;">
+    {% if total_activity_period == 0 %}
+    <div class="text-center py-5 text-muted">
+        <h5 class="mb-0">No platform activity in the last 30 days.</h5>
+    </div>
+    {% else %}
+    <div style="height: 400px; width: 100%;">
+        <canvas id="activityChart"></canvas>
+    </div>
+    {% endif %}
+</div>
+
+{{ activity_data_json|json_script:"activityData" }}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const dataElement = document.getElementById('activityData');
+    if (!dataElement) return;
+
+    const activityData = JSON.parse(dataElement.textContent);
+    
+    // Process data for Chart.js
+    const labels = activityData.map(item => item.date);
+    const dataPoints = activityData.map(item => item.score);
+
+    const ctx = document.getElementById('activityChart').getContext('2d');
+    
+    // Gradient fill
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
+    gradient.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Activity Score',
+                data: dataPoints,
+                borderColor: '#3b82f6',
+                backgroundColor: gradient,
+                borderWidth: 3,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#3b82f6',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                fill: true,
+                tension: 0.4 // Smooth curve
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: '#1e293b',
+                    titleFont: { size: 14, family: 'Inter' },
+                    bodyFont: { size: 14, family: 'Inter', weight: 'bold' },
+                    padding: 12,
+                    displayColors: false,
+                    callbacks: {
+                        label: function(context) {
+                            return `Score: ${context.parsed.y}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        font: { family: 'Inter' },
+                        color: '#64748b'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#e2e8f0',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        font: { family: 'Inter' },
+                        color: '#64748b',
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

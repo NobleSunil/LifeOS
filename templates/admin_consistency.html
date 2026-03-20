@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard-header" style="margin-bottom: 2rem;">
+    <h1 style="color: var(--primary-color);">⚡ Consistency Leaderboard</h1>
+    <p style="color: var(--text-secondary);">Users with the highest completion consistency.</p>
+</div>
+
+<div class="layout-grid" style="grid-template-columns: 1fr;">
+    <div class="list-section card">
+        <div class="list-header">
+            <h3>🏆 Top Consistent Users</h3>
+            <span style="font-size: 0.8rem; background: var(--secondary-color); color: var(--primary-color); padding: 0.2rem 0.6rem; border-radius: 1rem;">All Time</span>
+        </div>
+        <div class="items-list">
+           {% for lb in consistency_leaderboard %}
+            <div class="item-card" style="display: flex; justify-content: space-between; align-items: center; cursor: default;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="font-size: 1.25rem; font-weight: bold; color: var(--text-secondary); width: 24px; text-align: center;">
+                        #{{ forloop.counter }}
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; color: var(--text-color);">{{ lb.username }}</h4>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1.5rem;">
+                    <div style="text-align: right;">
+                        <span style="display: block; font-size: 0.8rem; color: var(--text-secondary);">Habits</span>
+                        <span style="font-weight: 600;">{{ lb.habits }}</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="display: block; font-size: 0.8rem; color: var(--text-secondary);">Tasks</span>
+                        <span style="font-weight: 600;">{{ lb.tasks }}</span>
+                    </div>
+                    <div style="text-align: right; min-width: 60px;">
+                        <span style="display: block; font-size: 0.8rem; color: var(--text-secondary);">Score</span>
+                        <span style="font-weight: bold; color: var(--primary-color); font-size: 1.1rem;">{{ lb.score }}</span>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">Not enough data for leaderboard.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

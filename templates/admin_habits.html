@@ -1,0 +1,69 @@
+{% extends 'admin_base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold" style="color: var(--primary-color);">💪 Habits Analytics</h2>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm" style="border-radius: 12px; height: 100%;">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-2 px-4">
+                <h5 class="fw-bold mb-0 text-secondary">🏅 TOP 5 HABITS</h5>
+            </div>
+            <div class="card-body px-4 pb-4">
+                {% if top_habits %}
+                    <ul class="list-group list-group-flush">
+                    {% for habit in top_habits %}
+                        <li class="list-group-item d-flex align-items-center justify-content-between px-0 py-3 border-0">
+                            <span class="fw-bold text-truncate pe-2" style="width: 140px; font-size: 1.05rem;">{{ forloop.counter }}. {{ habit.habit_name }}</span>
+                            <div class="flex-grow-1" style="font-family: monospace; letter-spacing: -1px; color: var(--accent-color); font-size: 1.1rem; overflow: hidden; white-space: nowrap;">
+                                {% widthratio habit.count top_habits.0.count 12 as proportion %}
+                                {% for i in "123456789012"|make_list %}
+                                    {% if forloop.counter <= proportion|add:"0" %}█{% else %}<span style="color:#cbd5e1;">░</span>{% endif %}
+                                {% endfor %}
+                            </div>
+                            <span class="text-muted fw-semibold ps-2" style="min-width: 80px; text-align: right;">{{ habit.count }} users</span>
+                        </li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="text-center py-4 text-muted">
+                        No habits found.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm" style="border-radius: 12px; height: 100%;">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-2 px-4">
+                <h5 class="fw-bold mb-0 text-secondary">🏅 TOP 5 ACTIVE USERS</h5>
+            </div>
+            <div class="card-body px-4 pb-4">
+                {% if top_users %}
+                    <ul class="list-group list-group-flush">
+                    {% for u in top_users %}
+                        <li class="list-group-item d-flex align-items-center px-0 py-3 border-0">
+                            <span class="fw-bold text-truncate pe-2" style="width: 140px; font-size: 1.05rem;">{{ forloop.counter }}. {{ u.username }}</span>
+                            <span class="text-muted fw-semibold flex-grow-1 text-center">{{ u.log_count }} habits logged</span>
+                            <span class="fw-bold ms-auto ps-2" style="min-width: 90px; text-align: right;">
+                                {% if u.is_active %}
+                                    <span class="text-success" style="font-size: 0.9rem;">🟢 Active</span>
+                                {% else %}
+                                    <span class="text-danger" style="font-size: 0.9rem;">🔴 Inactive</span>
+                                {% endif %}
+                            </span>
+                        </li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="text-center py-4 text-muted">
+                        No active users found.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends 'admin_base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold" style="color: var(--primary-color);">📊 Overview</h2>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-card-title">Total Users</div>
+            <p class="stat-card-value">{{ total_users }}</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-card-title">Active Users</div>
+            <p class="stat-card-value">{{ active_users }}</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-card-title">Total Goals</div>
+            <p class="stat-card-value">{{ total_goals }}</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-card-title">Total Tasks</div>
+            <p class="stat-card-value">{{ total_tasks }}</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-card-title">Total Habits</div>
+            <p class="stat-card-value">{{ total_habits }}</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-card-title">Habit Completion</div>
+            <p class="stat-card-value">{{ habit_completion_rate }}%</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

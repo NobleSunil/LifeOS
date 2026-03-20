@@ -1,70 +1,223 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="dashboard-header">
-    <div class="greeting-section">
-        <h1 style="color: var(--primary-color); font-size: 1.8rem; margin-bottom: 0.25rem;">
-            {{ greeting_time }}, {{ display_name }} <span style="font-family: 'Segoe UI Emoji', sans-serif;">👋</span>
-        </h1>
-        <p style="color: var(--text-secondary); font-size: 0.95rem;">Here is a summary of your daily progress.</p>
-    </div>
 
+<!-- Section 1: Greeting -->
+<div class="dashboard-section mb-4" style="margin-bottom: 2.5rem;">
+    <h1 style="color: var(--primary-color);">{{ greeting_time }} {{ display_name }}!</h1>
+    <h4 style="color: var(--text-secondary); margin-bottom: 0.5rem; font-weight:500;">📅 {{ today_date|date:"l, F j, Y" }}</h4>
+    <p style="font-style: italic; color: var(--text-secondary); margin-top: 10px; font-size: 1.1rem;">"{{ daily_quote }}"</p>
 </div>
 
-<div class="metrics-grid">
-    <div class="card metric-card">
-        <h3>⚡ Consistency Score</h3>
-        <p class="metric-value">{{ consistency_score }}%</p>
+<!-- Section 2: Quick Stats Strip (3 Cards) -->
+<div class="metrics-grid" style="margin-bottom: 3rem;">
+    <div class="card metric-card" style="text-align: center;">
+        <h3>Tasks Due Today</h3>
+        <span class="metric-value">{{ total_tasks_due_today }}</span>
     </div>
-    <div class="card metric-card">
-        <h3>🎯 Total Goals</h3>
-        <p>{{ completed_goals }} / {{ total_goals }} Completed</p>
+    <div class="card metric-card" style="text-align: center;">
+        <h3>Active Goals</h3>
+        <span class="metric-value">{{ total_active_goals }}</span>
     </div>
-    <div class="card metric-card">
-        <h3>✅ Completed Tasks</h3>
-        <p>{{ completed_tasks }} / {{ total_tasks }} Completed</p>
-    </div>
-    <div class="card metric-card">
-        <h3>🔁 Habit Completion</h3>
-        <p>{{ completed_habits_today }} / {{ total_habits }} Done</p>
+    <div class="card metric-card" style="text-align: center;">
+        <h3>Habits Logged Today</h3>
+        <span class="metric-value">{{ habits_logged_today }}</span>
     </div>
 </div>
 
-<div class="chart-container card mt-20">
-    <h2>7-Day Consistency Trend</h2>
-    <canvas id="consistencyChart"></canvas>
-</div>
-
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    Chart.defaults.color = '#71717A';
-    Chart.defaults.borderColor = '#EAE6DF';
-    Chart.defaults.font.family = "'Outfit', sans-serif";
+<!-- Dashboard Grid (2 columns on desktop) -->
+<div class="layout-grid">
     
-    const ctx = document.getElementById('consistencyChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: {{ chart_labels|safe }},
-            datasets: [{
-                label: 'Consistency Score (%)',
-                data: {{ chart_data|safe }},
-                borderColor: '#4f46e5',
-                backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.3
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100
-                }
-            }
-        }
-    });
-</script>
+    <!-- Left Column: Tasks and Habits -->
+    <div class="left-col" style="display: flex; flex-direction: column; gap: 2rem;">
+        
+        <!-- Section 3: Today's Tasks -->
+        <div class="card">
+            <h3 style="margin-bottom: 1.5rem;">Today's Tasks</h3>
+            <div class="list-section">
+                {% for task in today_tasks %}
+                <div class="item-card {% if task.ui_status == 'overdue' %}border-danger{% elif task.ui_status == 'today' %}border-warning{% endif %}" style="padding: 1.25rem; border-radius: 0.5rem; border: 1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; background: #fff;">
+                    <div>
+                        <h4 style="margin:0; font-size: 1.15rem;">{{ task.title }}</h4>
+                        <div style="font-size: 0.85rem; margin-top: 10px; display:flex; gap: 8px; align-items:center; flex-wrap: wrap;">
+                            {% if task.ui_status == 'overdue' %}
+                                <span style="color: var(--danger-color); font-weight:600;">⚠️ {{ task.date_label }}</span>
+                            {% elif task.ui_status == 'today' %}
+                                <span style="color: var(--warning-color); font-weight:600;">🕒 {{ task.date_label }}</span>
+                            {% else %}
+                                <span style="color: var(--text-secondary);">📅 {{ task.date_label }}</span>
+                            {% endif %}
+                            
+                            {% if task.goal %}
+                                <span style="background:var(--primary-color); color:white; padding: 3px 8px; border-radius:4px; font-size:0.75rem;">🎯 {{ task.goal.title }}</span>
+                            {% endif %}
+                            
+                            {% if task.habit %}
+                                <span style="background:var(--success-color); color:white; padding: 3px 8px; border-radius:4px; font-size:0.75rem;">💪 {{ task.habit.habit_name }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <form action="{% url 'complete_task' task.id %}" method="post" style="margin:0;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-primary">✓ Complete</button>
+                    </form>
+                </div>
+                {% empty %}
+                <p style="color: var(--text-secondary); text-align:center; padding: 1.5rem 0; background: #f8fafc; border-radius: 0.5rem;">No tasks for today. Enjoy your day! 🎉</p>
+                {% endfor %}
+            </div>
+            <div style="text-align: right; margin-top: 1.5rem;">
+                <a href="{% url 'tasks_list' %}" style="text-decoration:none; font-size:0.95rem; font-weight:600; color:var(--primary-color);">View All Tasks →</a>
+            </div>
+        </div>
+
+        <!-- Section 5: Today's Habits -->
+        <div class="card">
+            <h3 style="margin-bottom: 1.5rem;">Today's Habits</h3>
+            <div class="list-section">
+                {% for habit in today_habits %}
+                <div class="item-card" style="padding: 1.25rem; border-radius: 0.5rem; border: 1px solid var(--border-color); background: #fff; flex-direction:column; align-items:flex-start;">
+                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center; margin-bottom: 12px;">
+                        <div>
+                            <h4 style="margin:0; display:inline-block; font-size: 1.15rem;">{{ habit.habit_name }}</h4>
+                            <span style="margin-left:8px; font-size:0.85rem; color:var(--text-secondary); font-weight: 500;">🔥 {{ habit.streak }} day streak</span>
+                        </div>
+                        {% if habit.completion_today is None %}
+                            <a href="{% url 'habits_list' %}" class="btn btn-sm" style="background:var(--primary-color); color:white; padding: 0.35rem 0.75rem; border-radius: 6px;">Log Now</a>
+                        {% endif %}
+                    </div>
+                    {% if habit.goal %}
+                        <span style="background:var(--primary-color); color:white; padding: 3px 8px; border-radius:4px; font-size:0.75rem; margin-bottom:12px; display:inline-block;">🎯 {{ habit.goal.title }}</span>
+                    {% endif %}
+                    <div style="width: 100%; display:flex; align-items:center; gap: 15px;">
+                        <div style="flex-grow: 1; height: 10px; background: #f1f5f9; border-radius: 5px; overflow: hidden; border: 1px solid #e2e8f0;">
+                            <div style="height: 100%; width: {{ habit.completion_today|default:0 }}%; background-color: var(--{{ habit.progress_color }}-color); transition: width 0.5s ease;"></div>
+                        </div>
+                        <span style="font-size:0.9rem; font-weight:700; width:45px; text-align:right; color: var(--{{ habit.progress_color }}-color);">{{ habit.completion_today|default:0 }}%</span>
+                    </div>
+                </div>
+                {% empty %}
+                <p style="color: var(--text-secondary); text-align:center; padding: 1.5rem 0; background: #f8fafc; border-radius: 0.5rem;">No habits yet. Build your first habit! 💪</p>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Right Column: Goals and Graph -->
+    <div class="right-col" style="display: flex; flex-direction: column; gap: 2rem;">
+
+        <!-- Section 4: Goal Progress -->
+        <div class="card">
+            <h3 style="margin-bottom: 1.5rem;">Active Goals</h3>
+            <div class="list-section">
+                {% for goal in active_goals %}
+                <div class="item-card" style="padding: 1.25rem; border-radius: 0.5rem; border: 1px solid var(--border-color); background: #fff; flex-direction:column; align-items:flex-start;">
+                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center; margin-bottom: 12px;">
+                        <h4 style="margin:0; font-size: 1.15rem;">{{ goal.title }}</h4>
+                        <span style="font-size:0.9rem; font-weight:600; color:var(--text-secondary);">{{ goal.completed_count }}/{{ goal.total_count }} tasks done</span>
+                    </div>
+                    <div style="width: 100%; display:flex; align-items:center; gap: 15px;">
+                        <div style="flex-grow: 1; height: 10px; background: #f1f5f9; border-radius: 5px; overflow: hidden; border: 1px solid #e2e8f0;">
+                            <div style="height: 100%; width: {{ goal.progress_pct|floatformat:0 }}%; background-color: var(--{{ goal.progress_color }}-color); transition: width 0.5s ease;"></div>
+                        </div>
+                        <span style="font-size:0.9rem; font-weight:700; width:45px; text-align:right; color: var(--{{ goal.progress_color }}-color);">{{ goal.progress_pct|floatformat:0 }}%</span>
+                    </div>
+                </div>
+                {% empty %}
+                <p style="color: var(--text-secondary); text-align:center; padding: 1.5rem 0; background: #f8fafc; border-radius: 0.5rem;">No active goals. Create one to get started! 🎯</p>
+                {% endfor %}
+            </div>
+            <div style="text-align: right; margin-top: 1.5rem;">
+                <a href="{% url 'goals_list' %}" style="text-decoration:none; font-size:0.95rem; font-weight:600; color:var(--primary-color);">View All Goals →</a>
+            </div>
+        </div>
+
+        <!-- Section 6: Productivity Graph -->
+        <div class="card">
+            <h3 style="margin-bottom: 1.5rem;">This Week</h3>
+            {% if has_activity_data %}
+            <div style="position: relative; height: 300px; width: 100%;">
+                <canvas id="productivityChart"></canvas>
+            </div>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    var ctx = document.getElementById('productivityChart').getContext('2d');
+                    var chartLabels = JSON.parse('{{ chart_labels|escapejs }}');
+                    var chartData = JSON.parse('{{ chart_data|escapejs }}');
+                    var avgScore = {{ avg_score }};
+                    
+                    var productivityChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: chartLabels,
+                            datasets: [{
+                                label: 'Productivity Score',
+                                data: chartData,
+                                backgroundColor: 'rgba(30, 58, 95, 0.1)',
+                                borderColor: 'rgba(30, 58, 95, 1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4,
+                                pointBackgroundColor: '#ffffff',
+                                pointBorderColor: 'rgba(30, 58, 95, 1)',
+                                pointBorderWidth: 2,
+                                pointRadius: 4,
+                                pointHoverRadius: 6
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0,0,0,0.8)',
+                                    padding: 10,
+                                    titleFont: { family: "'Outfit', sans-serif", size: 14 },
+                                    bodyFont: { family: "'Outfit', sans-serif", size: 14, weight: 'bold' }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 100,
+                                    grid: { color: '#EAE6DF', drawBorder: false },
+                                    ticks: { font: { family: "'Outfit', sans-serif" }, color: '#71717A' }
+                                },
+                                x: {
+                                    grid: { display: false, drawBorder: false },
+                                    ticks: { font: { family: "'Outfit', sans-serif" }, color: '#71717A' }
+                                }
+                            }
+                        }
+                    });
+
+                    // Add average dashed line naitvely without plugins
+                    productivityChart.data.datasets.push({
+                        label: 'Average',
+                        data: Array(chartLabels.length).fill(avgScore),
+                        borderColor: '#71717A',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        pointHoverRadius: 0,
+                        fill: false,
+                        tension: 0
+                    });
+                    productivityChart.update();
+                });
+            </script>
+            {% else %}
+            <p style="color: var(--text-secondary); text-align:center; padding: 2.5rem 0; background: #f8fafc; border-radius: 0.5rem; border: 1px dashed var(--border-color);">
+                No activity this week. Start logging to see your score! 📊
+            </p>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
 {% endblock %}

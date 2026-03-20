@@ -1,0 +1,67 @@
+{% extends 'admin_base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <h2 class="fw-bold mb-0" style="color: var(--primary-color);">👥 Users</h2>
+    <form method="get" class="d-flex" style="max-width: 300px; width: 100%;">
+        <input type="text" name="q" class="form-control me-2" placeholder="🔍 Search users..." value="{{ search_query }}">
+        <input type="hidden" name="status" value="{{ filter_status }}">
+        <button type="submit" class="btn btn-primary d-none">Search</button>
+    </form>
+</div>
+
+<div class="mb-4 d-flex gap-2">
+    <a href="?status=all{% if search_query %}&q={{ search_query }}{% endif %}" class="btn {% if filter_status == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %} rounded-pill px-4">All</a>
+    <a href="?status=active{% if search_query %}&q={{ search_query }}{% endif %}" class="btn {% if filter_status == 'active' %}btn-primary{% else %}btn-outline-primary{% endif %} rounded-pill px-4">Active</a>
+    <a href="?status=inactive{% if search_query %}&q={{ search_query }}{% endif %}" class="btn {% if filter_status == 'inactive' %}btn-primary{% else %}btn-outline-primary{% endif %} rounded-pill px-4">Inactive</a>
+</div>
+
+<div class="card border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0" style="vertical-align: middle;">
+            <thead style="background-color: #f8fafc;">
+                <tr>
+                    <th class="ps-4 py-3 text-secondary" style="font-weight: 600;">Username</th>
+                    <th class="py-3 text-secondary" style="font-weight: 600;">Email</th>
+                    <th class="py-3 text-secondary" style="font-weight: 600;">Age</th>
+                    <th class="py-3 text-secondary" style="font-weight: 600;">Joined Date</th>
+                    <th class="py-3 text-secondary" style="font-weight: 600;">Status</th>
+                    <th class="pe-4 py-3 text-secondary text-end" style="font-weight: 600;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr {% if not user.is_active %}style="opacity: 0.6; background-color: #f1f5f9;"{% endif %}>
+                    <td class="ps-4 py-3 fw-bold">{{ user.username }}</td>
+                    <td class="py-3 text-muted">{{ user.email|default:"-" }}</td>
+                    <td class="py-3 text-muted">{{ user.userprofile.age|default:"-" }}</td>
+                    <td class="py-3 text-muted">{{ user.date_joined|date:"M d Y" }}</td>
+                    <td class="py-3">
+                        {% if user.is_active %}
+                        <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill" style="font-size: 0.85rem;">🟢 Active</span>
+                        {% else %}
+                        <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill" style="font-size: 0.85rem;">🔴 Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td class="pe-4 py-3 text-end">
+                        <form method="post" action="{% url 'toggle_user_status' user.id %}">
+                            {% csrf_token %}
+                            {% if user.is_active %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger fw-semibold px-3">Disable</button>
+                            {% else %}
+                            <button type="submit" class="btn btn-sm btn-outline-success fw-semibold px-3">Enable</button>
+                            {% endif %}
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <h5 class="mb-0">No users found matching your criteria.</h5>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

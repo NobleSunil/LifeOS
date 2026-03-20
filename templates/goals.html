@@ -1,48 +1,168 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block content %}
-<div class="page-header">
-    <h1>Goals</h1>
+
+<!-- Header -->
+<div class="dashboard-header" style="margin-bottom: 2rem;">
+    <h1 style="color: var(--primary-color);">🎯 My Goals</h1>
+    <button class="btn btn-primary" id="newGoalBtn" style="padding: 0.6rem 1.25rem; font-size: 1rem;">+ New Goal</button>
 </div>
 
-<div class="layout-grid">
-    <div class="form-section card">
-        <h3>Add New Goal</h3>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-primary">Save Goal</button>
-        </form>
-    </div>
-    
-    <div class="list-section">
-        {% for goal in goals %}
-        <div class="card item-card {% if goal.status == 'Completed' %}completed{% endif %}">
-            <div class="item-content">
-                <h4>{{ goal.title }}</h4>
-                <p>{{ goal.description }}</p>
-                <small>Status: {{ goal.status }}</small>
+<!-- Filters -->
+<div class="tabs-container" style="display:flex; gap:10px; margin-bottom:2rem; border-bottom:1px solid var(--border-color); padding-bottom:1rem;">
+    <button class="filter-tab active" data-filter="All" style="background:none; border:none; font-weight:600; padding:5px 15px; cursor:pointer; color:var(--primary-color); border-bottom:2px solid var(--primary-color); font-size:1rem; transition: color 0.2s;">All</button>
+    <button class="filter-tab" data-filter="Active" style="background:none; border:none; font-weight:500; padding:5px 15px; cursor:pointer; color:var(--text-secondary); font-size:1rem; transition: color 0.2s;">Active</button>
+    <button class="filter-tab" data-filter="Completed" style="background:none; border:none; font-weight:500; padding:5px 15px; cursor:pointer; color:var(--text-secondary); font-size:1rem; transition: color 0.2s;">Completed</button>
+</div>
+
+<!-- List -->
+<div id="goalsContainer" style="display:flex; flex-direction:column; gap:1.5rem;">
+    {% for goal in goals %}
+    <div class="card goal-card {% if goal.status == 'Completed' %}completed-row{% endif %}" data-status="{{ goal.status }}" data-progress="{{ goal.progress|floatformat:0 }}" style="padding: 0; overflow:hidden; transition: all 0.3s ease; display: flex; flex-direction:column;">
+        
+        <!-- Collapsed Row -->
+        <div class="goal-header" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding: 1.5rem; transition: background 0.2s;">
+            <!-- Left Info -->
+            <div style="display:flex; flex-direction:column; gap:12px; flex-grow:1; margin-right: 20px;">
+                <div style="display:flex; align-items:center; gap: 15px; flex-wrap:wrap;">
+                    <h4 style="margin:0; font-size:1.25rem;">🎯 {{ goal.title }}</h4>
+                    {% if goal.status == 'Active' %}
+                        <span style="font-size:0.8rem; background:#dcfce7; color:#166534; padding:3px 10px; border-radius:12px; font-weight:700; letter-spacing:0.05em;">🟢 Active</span>
+                    {% else %}
+                        <span style="font-size:0.8rem; background:#f1f5f9; color:#475569; padding:3px 10px; border-radius:12px; font-weight:700; letter-spacing:0.05em;">✅ Completed</span>
+                    {% endif %}
+                    <span style="font-size:0.85rem; color:var(--text-secondary); font-weight:500;">{{ goal.total_tasks }} tasks • {{ goal.habit_count }} habits</span>
+                </div>
+                <!-- Progress Bar -->
+                <div style="display:flex; align-items:center; gap:15px; width: 100%; max-width: 500px;">
+                    <div style="flex-grow:1; height:10px; background:#f1f5f9; border-radius:5px; overflow:hidden; border: 1px solid var(--border-color);">
+                        <div style="height:100%; width:{{ goal.progress|floatformat:0 }}%; background-color:var(--{{ goal.progress_color }}-color); transition: width 0.5s ease;"></div>
+                    </div>
+                    <span style="font-size:0.95rem; font-weight:700; width:45px; color:var(--{{ goal.progress_color }}-color);">{{ goal.progress|floatformat:0 }}%</span>
+                </div>
             </div>
-            <div class="item-actions">
-                {% if goal.status == 'Active' %}
-                <form action="{% url 'complete_goal' goal.id %}" method="post" style="display:inline;">
+            <!-- Toggle Icon -->
+            <div class="expand-icon" style="font-size: 1.5rem; color: var(--text-secondary); transition: transform 0.3s ease; width: 30px; text-align:center;">▸</div>
+        </div>
+
+        <!-- Expanded Content -->
+        <div class="goal-details" style="display:none; padding: 0 1.5rem 1.5rem 1.5rem; border-top: 1px solid var(--border-color); background: #fdfdfd;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-top: 1.5rem;">
+                
+                <!-- Tasks List -->
+                <div>
+                    <h5 style="margin-bottom:1.25rem; font-size:0.9rem; color:var(--text-secondary); letter-spacing:0.05em; text-transform:uppercase;">📋 LINKED TASKS</h5>
+                    <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                        {% for task in goal.tasks.all %}
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            {% if task.status == 'Completed' %}
+                                <span style="color:var(--success-color); font-size:1.1rem;">✅</span>
+                                <span style="text-decoration:line-through; color:var(--text-secondary); font-size:1rem;">{{ task.title }}</span>
+                            {% else %}
+                                <span style="color:var(--text-secondary); font-size:1.1rem;">⬜</span>
+                                <span style="font-size:1rem; color: var(--text-primary); font-weight:500;">{{ task.title }}</span>
+                            {% endif %}
+                            
+                            {% if task.habit %}
+                                <span style="background:var(--success-color); color:white; font-size:0.7rem; padding:3px 8px; border-radius:6px; font-weight:600; margin-left:8px;">💪 {{ task.habit.habit_name }}</span>
+                            {% endif %}
+                        </div>
+                        {% empty %}
+                        <div style="font-size:0.95rem; color:var(--text-secondary); padding: 0.5rem 0;">
+                            No tasks linked yet. <a href="{% url 'tasks_list' %}" style="color:var(--primary-color); font-weight:600; text-decoration:none;">+ Link a Task</a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Habits List -->
+                <div>
+                    <h5 style="margin-bottom:1.25rem; font-size:0.9rem; color:var(--text-secondary); letter-spacing:0.05em; text-transform:uppercase;">💪 LINKED HABITS</h5>
+                    <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                        {% for habit in goal.habits.all %}
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="font-size:1.1rem;">💪</span>
+                            <span style="font-size:1rem; font-weight:500; color:var(--text-primary);">{{ habit.habit_name }}</span>
+                        </div>
+                        {% empty %}
+                        <div style="font-size:0.95rem; color:var(--text-secondary); padding: 0.5rem 0;">No habits linked yet.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <hr style="border:none; border-top:1px solid var(--border-color); margin: 2rem 0 1.5rem 0;">
+            
+            <!-- Actions -->
+            <div style="display:flex; justify-content:flex-end; gap: 10px; align-items:center;">
+                <button class="btn btn-sm btn-secondary edit-goal-btn" data-id="{{ goal.id }}" data-title="{{ goal.title|escapejs }}" data-desc="{{ goal.description|escapejs }}" data-status="{{ goal.status }}">Edit</button>
+                <form action="{% url 'delete_goal' goal.id %}" method="post" style="margin:0;">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-success btn-sm">Complete</button>
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this goal? All linked tasks and habits will be unlinked.');">Delete</button>
+                </form>
+                {% if goal.status == 'Active' %}
+                <form action="{% url 'complete_goal' goal.id %}" method="post" style="margin:0;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-success">Mark Complete</button>
                 </form>
                 {% endif %}
-                
-                <!-- edit button -->
-                <a href="{% url 'edit_goal' goal.id %}" class="btn btn-primary btn-sm" style="text-decoration:none; padding: 0.25rem 0.5rem; font-size: 0.875rem;">Edit</a>
-                
-                <form action="{% url 'delete_goal' goal.id %}" method="post" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                </form>
             </div>
         </div>
-        {% empty %}
-        <p>No goals set yet. Start by creating one!</p>
-        {% endfor %}
+    </div>
+    {% empty %}
+    <div id="emptyGlobalPlaceholder" style="text-align:center; padding: 4rem 0; background: var(--card-bg); border-radius: 0.5rem; border: 1px solid var(--border-color);">
+        <h3 style="margin-bottom:15px;">🎯 No goals yet.</h3>
+        <p style="color:var(--text-secondary); margin-bottom: 25px; font-size:1.1rem;">Start by setting your first goal!</p>
+        <button class="btn btn-primary" onclick="document.getElementById('newGoalBtn').click()" style="padding:0.75rem 1.5rem; font-size:1.1rem;">+ Create My First Goal</button>
+    </div>
+    {% endfor %}
+    
+    <!-- Empty Filter States -->
+    <div id="emptyActivePlaceholder" style="display:none; text-align:center; padding: 4rem 0; color:var(--text-secondary); font-size:1.1rem; background: var(--card-bg); border-radius: 0.5rem; border: 1px dashed var(--border-color);">No active goals right now.</div>
+    <div id="emptyCompletedPlaceholder" style="display:none; text-align:center; padding: 4rem 0; color:var(--text-secondary); font-size:1.1rem; background: var(--card-bg); border-radius: 0.5rem; border: 1px dashed var(--border-color);">No completed goals yet. Keep going! 💪</div>
+</div>
+
+<!-- Modal logic natively integrated -->
+<div id="goalModal" class="fab-modal">
+    <div class="fab-modal-content" style="width: 450px;">
+        <span id="closeGoalModal" class="close-modal">&times;</span>
+        <h3 id="goalModalTitle" style="margin-bottom: 1.5rem;">New Goal</h3>
+        <form id="goalForm" method="post" action="{% url 'goals_list' %}">
+            {% csrf_token %}
+            <div style="margin-bottom: 15px;">
+                <label style="display:block; margin-bottom:8px; font-weight:600;">Title</label>
+                <input type="text" name="title" id="goalTitleInput" required class="form-control" style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:1rem;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display:block; margin-bottom:8px; font-weight:600;">Description (optional)</label>
+                <textarea name="description" id="goalDescInput" rows="4" class="form-control" style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:1rem; font-family:inherit;"></textarea>
+            </div>
+            <div style="margin-bottom: 25px;" id="statusGroup">
+                <label style="display:block; margin-bottom:8px; font-weight:600;">Status</label>
+                <select name="status" id="goalStatusInput" class="form-control" style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:1rem;">
+                    <option value="Active">Active</option>
+                    <option value="Completed">Completed</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%; font-size:1.1rem; padding:0.75rem;">Save Goal</button>
+        </form>
     </div>
 </div>
+
+<!-- Auto Complete Prompt Modal -->
+<div id="autoCompleteModal" class="fab-modal" style="z-index: 1100;">
+    <div class="fab-modal-content" style="text-align:center; padding: 3rem 2rem;">
+        <h2 style="margin-bottom: 1rem; color:var(--success-color);">🎉 All tasks done!</h2>
+        <p style="margin-bottom: 2rem; font-size:1.15rem;">Mark "<span id="autoCompleteGoalTitle" style="font-weight:700; color:var(--primary-color);"></span>" as Complete?</p>
+        <div style="display:flex; justify-content:center; gap: 15px;">
+            <form id="autoCompleteForm" method="post" action="" style="margin:0;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success" style="font-size:1.1rem; padding:0.75rem 1.5rem;">Yes, Complete it!</button>
+            </form>
+            <button id="closeAutoComplete" class="btn btn-secondary" style="font-size:1.1rem; padding:0.75rem 1.5rem;">Not yet</button>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/goals.js' %}?v={{ request.timestamp|default:'1.1' }}"></script>
 {% endblock %}

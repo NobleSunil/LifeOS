@@ -7,7 +7,7 @@ class UserProfileForm(forms.ModelForm):
 
     class Meta:
         model = UserProfile
-        fields = ['full_name', 'bio']
+        fields = ['full_name', 'bio', 'age']
 
     def __init__(self, *args, **kwargs):
         self.user_obj = kwargs.pop('user_obj', None)
@@ -29,6 +29,7 @@ class UserProfileForm(forms.ModelForm):
 class UserRegistrationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
     password_confirm = forms.CharField(widget=forms.PasswordInput, label="Confirm Password")
+    age = forms.IntegerField(required=False, min_value=0, label="Age (Optional)")
 
     class Meta:
         model = User
@@ -51,17 +52,33 @@ class GoalForm(forms.ModelForm):
 class HabitForm(forms.ModelForm):
     class Meta:
         model = Habit
-        fields = ['habit_name']
+        fields = ['habit_name', 'goal', 'tracking_mode']
+        widgets = {
+            'tracking_mode': forms.RadioSelect,
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # tracking_mode cannot be changed after creation
+        if self.instance and self.instance.pk:
+            self.fields['tracking_mode'].disabled = True
 
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['title', 'description', 'start_date', 'due_date', 'status']
+        fields = ['title', 'description', 'goal', 'habit', 'start_date', 'due_date', 'status', 'task_type']
         widgets = {
             'start_date': forms.DateInput(attrs={'type': 'date'}),
             'due_date': forms.DateInput(attrs={'type': 'date'}),
+            'task_type': forms.RadioSelect,
         }
-        
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # task_type cannot be changed after creation
+        if self.instance and self.instance.pk:
+            self.fields['task_type'].disabled = True
+
     def clean(self):
         cleaned_data = super().clean()
         start_date = cleaned_data.get('start_date')
@@ -72,7 +89,41 @@ class TaskForm(forms.ModelForm):
             
         return cleaned_data
 
+
 class ReflectionForm(forms.ModelForm):
+    wins = forms.CharField(widget=forms.Textarea(attrs={'rows': 2}), required=True, label="Wins")
+    challenges = forms.CharField(widget=forms.Textarea(attrs={'rows': 2}), required=False, label="Challenges")
+    tomorrow = forms.CharField(widget=forms.Textarea(attrs={'rows': 2}), required=False, label="Tomorrow")
+
     class Meta:
         model = Reflection
-        fields = ['content']
+        fields = []
+
+    def __init__(self, *args, **kwargs):
+        super(ReflectionForm, self).__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            data = self.instance.content
+            if isinstance(data, dict):
+                self.fields['wins'].initial = data.get('wins', '')
+                self.fields['challenges'].initial = data.get('challenges', '')
+                self.fields['tomorrow'].initial = data.get('tomorrow', '')
+            elif isinstance(data, str):
+                import json
+                try:
+                    parsed = json.loads(data)
+                    self.fields['wins'].initial = parsed.get('wins', '')
+                    self.fields['challenges'].initial = parsed.get('challenges', '')
+                    self.fields['tomorrow'].initial = parsed.get('tomorrow', '')
+                except json.JSONDecodeError:
+                    self.fields['wins'].initial = data
+
+    def save(self, commit=True):
+        reflection = super(ReflectionForm, self).save(commit=False)
+        reflection.content = {
+            'wins': self.cleaned_data.get('wins', ''),
+            'challenges': self.cleaned_data.get('challenges', ''),
+            'tomorrow': self.cleaned_data.get('tomorrow', '')
+        }
+        if commit:
+            reflection.save()
+        return reflection

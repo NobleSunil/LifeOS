@@ -1,51 +1,203 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block content %}
-<div class="page-header">
-    <h1>Tasks</h1>
+
+<!-- Header -->
+<div class="dashboard-header" style="margin-bottom: 2rem; display:flex; justify-content:space-between; align-items:center;">
+    <h1 style="color: var(--primary-color);">✅ My Tasks</h1>
+    <button class="btn btn-primary" id="newTaskBtn" style="padding: 0.6rem 1.25rem; font-size: 1rem;">+ New Task</button>
 </div>
 
-<div class="layout-grid">
-    <div class="form-section card">
-        <h3>Add New Task</h3>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-primary">Save Task</button>
-        </form>
+<!-- Filters -->
+<div class="tabs-container" style="display:flex; gap:10px; margin-bottom:2.5rem; border-bottom:1px solid var(--border-color); padding-bottom:1rem; flex-wrap:wrap; align-items:center;">
+    <button class="filter-tab active" data-filter="All" style="background:none; border:none; font-weight:600; padding:5px 15px; cursor:pointer; color:var(--primary-color); border-bottom:2px solid var(--primary-color); font-size:1rem; transition: color 0.2s;">All</button>
+    <button class="filter-tab" data-filter="Today" style="background:none; border:none; font-weight:500; padding:5px 15px; cursor:pointer; color:var(--text-secondary); font-size:1rem; transition: color 0.2s;">Today</button>
+    <button class="filter-tab" data-filter="Overdue" style="background:none; border:none; font-weight:500; padding:5px 15px; cursor:pointer; color:var(--text-secondary); font-size:1rem; transition: color 0.2s;">Overdue</button>
+    
+    <div style="position:relative; margin-left:15px;">
+        <select id="filterGoalSelect" class="form-control" style="padding:6px 12px; border-radius:6px; font-size:0.95rem; font-weight:500; color:var(--text-secondary); cursor:pointer; border: 1px solid var(--border-color);">
+            <option value="">🎯 By Goal</option>
+            {% for goal in user_goals %}
+                <option value="{{ goal.id }}">{{ goal.title }}</option>
+            {% endfor %}
+        </select>
     </div>
     
-    <div class="list-section">
-        {% for task in tasks %}
-        <div class="card item-card {% if task.status == 'Completed' %}completed{% endif %}">
-            <div class="item-content">
-                <h4>{{ task.title }}</h4>
-                <p>{{ task.description }}</p>
-                <small>
-                    Start: {% if task.start_date %}{{ task.start_date }}{% else %}Not specified{% endif %} | 
-                    Due: {{ task.due_date }} | Status: {{ task.status }}
-                </small>
-            </div>
-            <div class="item-actions">
-                {% if task.status == 'Pending' %}
-                <form action="{% url 'complete_task' task.id %}" method="post" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-success btn-sm">Complete</button>
-                </form>
-                {% endif %}
-                
-                <!-- edit button -->
-                <a href="{% url 'edit_task' task.id %}" class="btn btn-primary btn-sm" style="text-decoration:none; padding: 0.25rem 0.5rem; font-size: 0.875rem;">Edit</a>
-                
-                <form action="{% url 'delete_task' task.id %}" method="post" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                </form>
-            </div>
-        </div>
-        {% empty %}
-        <p>No tasks. You're all caught up!</p>
-        {% endfor %}
+    <div style="position:relative; margin-left:5px;">
+        <select id="filterHabitSelect" class="form-control" style="padding:6px 12px; border-radius:6px; font-size:0.95rem; font-weight:500; color:var(--text-secondary); cursor:pointer; border: 1px solid var(--border-color);">
+            <option value="">💪 By Habit</option>
+            {% for habit in user_habits %}
+                <option value="{{ habit.id }}">{{ habit.habit_name }}</option>
+            {% endfor %}
+        </select>
     </div>
 </div>
+
+<div id="tasksContainer" style="display:flex; flex-direction:column; gap:2.5rem;">
+    <!-- EMPTY GLOBAL STATE -->
+    {% if not overdue_tasks and not today_tasks and not pending_tasks and not completed_tasks %}
+    <div id="emptyGlobalPlaceholder" style="text-align:center; padding: 4rem 0; background: var(--card-bg); border-radius: 0.5rem; border: 1px solid var(--border-color);">
+        <h3 style="margin-bottom:15px;">✅ No tasks yet.</h3>
+        <p style="color:var(--text-secondary); margin-bottom: 25px; font-size:1.1rem;">Add your first task and get things done!</p>
+        <button class="btn btn-primary" onclick="document.getElementById('newTaskBtn').click()" style="padding:0.75rem 1.5rem; font-size:1.1rem;">+ Create My First Task</button>
+    </div>
+    {% endif %}
+
+    <!-- Section 1: ⚠️ OVERDUE -->
+    {% if overdue_tasks %}
+    <div class="task-section" id="section-overdue">
+        <h4 style="color:var(--danger-color); font-size:1.1rem; letter-spacing:0.05em; margin-bottom:1.25rem; text-transform:uppercase;">⚠️ Overdue</h4>
+        <div class="list-section" style="display:flex; flex-direction:column; gap:1.25rem;">
+            {% for task in overdue_tasks %}
+                {% include 'partials/task_card.html' with task=task border_class="border-danger" %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Section 2: 📌 TODAY -->
+    {% if today_tasks %}
+    <div class="task-section" id="section-today">
+        <h4 style="color:var(--warning-color); font-size:1.1rem; letter-spacing:0.05em; margin-bottom:1.25rem; text-transform:uppercase;">📌 Today</h4>
+        <div class="list-section" style="display:flex; flex-direction:column; gap:1.25rem;">
+            {% for task in today_tasks %}
+                {% include 'partials/task_card.html' with task=task border_class="border-warning" %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Section 3: 📋 PENDING -->
+    <div class="task-section" id="section-pending">
+        <h4 style="color:var(--text-secondary); font-size:1.1rem; letter-spacing:0.05em; margin-bottom:1.25rem; text-transform:uppercase;">📋 Pending</h4>
+        <div class="list-section" style="display:flex; flex-direction:column; gap:1.25rem;">
+            {% for task in pending_tasks %}
+                {% include 'partials/task_card.html' with task=task border_class="" %}
+            {% empty %}
+                <p class="empty-section-msg" style="color:var(--text-secondary); padding: 1.5rem; background: #f8fafc; border-radius:0.5rem; text-align:center;">No pending tasks. You are all caught up! 🎉</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Section 4: ✅ COMPLETED -->
+    <div class="task-section" id="section-completed" style="margin-top: 1rem;">
+        <div id="completedToggle" style="cursor:pointer; display:flex; align-items:center; gap:10px; padding: 1rem 1.5rem; background: #f1f5f9; border-radius:0.5rem; color:var(--text-secondary); font-weight:600; border: 1px solid var(--border-color); transition: background 0.2s;">
+            <span style="font-size:1.1rem; color: var(--text-primary);">✅ COMPLETED ({{ completed_tasks|length }})</span>
+            <span style="flex-grow:1;"></span>
+            <span id="completedIcon" style="font-size:1.2rem; transition: transform 0.3s ease;">▸</span>
+            <span id="completedTextLabel" style="font-size:0.95rem; font-weight:500;">Show</span>
+        </div>
+        
+        <div id="completedList" style="display:none; flex-direction:column; gap:1.25rem; margin-top:1.25rem;">
+            {% for task in completed_tasks %}
+                {% include 'partials/task_card.html' with task=task border_class="" is_completed=True %}
+            {% empty %}
+                <p class="empty-section-msg" style="color:var(--text-secondary); padding: 1.5rem; text-align:center;">No completed tasks yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Empty Filter Message -->
+    <div id="emptyFilterPlaceholder" style="display:none; text-align:center; padding: 4rem 0; color:var(--text-secondary); font-size:1.1rem; background: var(--card-bg); border-radius: 0.5rem; border: 1px dashed var(--border-color);">No tasks found for this filter.</div>
+</div>
+
+<!-- Task Form Modal -->
+<div id="taskModal" class="fab-modal">
+    <div class="fab-modal-content" style="width: 500px;">
+        <span id="closeTaskModal" class="close-modal">&times;</span>
+        <h3 id="taskModalTitle" style="margin-bottom: 1.5rem;">New Task</h3>
+        <form id="taskForm" method="post" action="{% url 'tasks_list' %}">
+            {% csrf_token %}
+            <div style="margin-bottom: 15px;">
+                <label style="display:block; margin-bottom:8px; font-weight:600;">Title <span style="color:var(--danger-color);">*</span></label>
+                <input type="text" name="title" id="taskTitleInput" required class="form-control" style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:1rem;">
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display:block; margin-bottom:8px; font-weight:600;">Description (optional)</label>
+                <textarea name="description" id="taskDescInput" rows="3" class="form-control" style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:1rem; font-family:inherit;"></textarea>
+            </div>
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 15px;">
+                <div>
+                    <label style="display:block; margin-bottom:8px; font-weight:600;">Start Date</label>
+                    <input type="date" name="start_date" id="taskStartInput" class="form-control" style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:1rem;">
+                </div>
+                <div>
+                    <label style="display:block; margin-bottom:8px; font-weight:600;">Due Date</label>
+                    <input type="date" name="due_date" id="taskDueInput" class="form-control" style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:1rem;">
+                </div>
+            </div>
+            <p id="dateError" style="color:var(--danger-color); font-size:0.85rem; display:none; margin-bottom:15px; font-weight:500;">⚠️ Due date must be strictly on or after the Start date.</p>
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 25px;">
+                <div>
+                    <label style="display:block; margin-bottom:8px; font-weight:600;">Link to Goal</label>
+                    <select name="goal" id="taskGoalInput" class="form-control" style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:0.95rem;">
+                        <option value="">── No Goal</option>
+                        {% for goal in user_goals %}
+                            <option value="{{ goal.id }}">{{ goal.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block; margin-bottom:8px; font-weight:600;">Link to Habit</label>
+                    <select name="habit" id="taskHabitInput" class="form-control" style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:0.95rem;">
+                        <option value="">── No Habit</option>
+                        {% for habit in user_habits %}
+                            <option value="{{ habit.id }}">{{ habit.habit_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 25px;" id="statusGroup">
+                <label style="display:block; margin-bottom:8px; font-weight:600;">Status</label>
+                <select name="status" id="taskStatusInput" class="form-control" style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:1rem;">
+                    <option value="Pending">Pending</option>
+                    <option value="Completed">Completed</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 25px;" id="taskTypeGroup">
+                <label style="display:block; margin-bottom:8px; font-weight:600;">Task Type</label>
+                <div class="task-type-selector" style="padding:12px; border:1px solid var(--border-color); border-radius:8px;">
+                    <label style="display:flex; align-items:flex-start; gap:10px; padding:8px; border-radius:6px; cursor:pointer; margin-bottom:8px;" class="type-option-label">
+                        <input type="radio" name="task_type" id="type_simple" value="simple" checked style="margin-top:3px; accent-color:var(--primary-color);">
+                        <div>
+                            <strong>Simple</strong>
+                            <div style="color:var(--text-secondary); font-size:0.85rem; margin-top:2px;">Just mark complete when done</div>
+                        </div>
+                    </label>
+                    <label style="display:flex; align-items:flex-start; gap:10px; padding:8px; border-radius:6px; cursor:pointer;" class="type-option-label">
+                        <input type="radio" name="task_type" id="type_trackable" value="trackable" style="margin-top:3px; accent-color:var(--primary-color);">
+                        <div>
+                            <strong>Trackable</strong>
+                            <div style="color:var(--text-secondary); font-size:0.85rem; margin-top:2px;">Track progress % along the way</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width:100%; font-size:1.1rem; padding:0.75rem;">Save Task</button>
+        </form>
+    </div>
+</div>
+
+<!-- Auto Complete Prompt Modal (Triggers inside tasks.js) -->
+<div id="autoCompleteGoalModal" class="fab-modal" style="z-index: 1100;">
+    <div class="fab-modal-content" style="text-align:center; padding: 3rem 2rem;">
+        <h2 style="margin-bottom: 1rem; color:var(--success-color);">🎉 Goal Accomplished!</h2>
+        <p style="margin-bottom: 2rem; font-size:1.15rem;">Mark goal "<span id="autoCompleteGoalName" style="font-weight:700; color:var(--primary-color);"></span>" as Complete?</p>
+        <div style="display:flex; justify-content:center; gap: 15px;">
+            <form id="autoCompleteGoalForm" method="post" action="" style="margin:0;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success" style="font-size:1.1rem; padding:0.75rem 1.5rem;">Yes, Complete it!</button>
+            </form>
+            <button id="closeAutoCompleteGoal" class="btn btn-secondary" style="font-size:1.1rem; padding:0.75rem 1.5rem;">Not yet</button>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/tasks.js' %}?v={{ request.timestamp|default:'1.1' }}"></script>
 {% endblock %}

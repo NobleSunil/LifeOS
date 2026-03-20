@@ -1,0 +1,101 @@
+<div class="card task-card {% if is_completed %}completed-row{% endif %} {{ border_class }}"
+     data-status="{{ task.status }}"
+     data-goal-id="{{ task.goal.id|default:'' }}"
+     data-habit-id="{{ task.habit.id|default:'' }}"
+     data-is-overdue="{% if task.due_color == 'danger' %}true{% else %}false{% endif %}"
+     data-is-today="{% if task.due_color == 'warning' %}true{% else %}false{% endif %}"
+     style="padding: 1.25rem; border-radius: 0.5rem; border: 1px solid var(--border-color); display:flex; flex-direction:column; background: #fff; transition: all 0.2s; margin-bottom: 0;">
+
+    <!-- Main row: title + actions -->
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+            <h4 style="margin:0; font-size:1.15rem; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
+                {% if is_completed %}<span style="color:var(--success-color);">✅</span><span style="text-decoration:line-through; color:var(--text-secondary);">{% else %}⬜ <span style="font-weight:600;">{% endif %}{{ task.title }}</span>
+            </h4>
+            <div style="font-size: 0.85rem; margin-top: 10px; display:flex; gap: 8px; align-items:center; flex-wrap: wrap;">
+                {% if border_class == 'border-danger' %}
+                    <span style="font-weight:600; color:var(--danger-color);">⚠️ {{ task.due_label }}</span>
+                {% elif border_class == 'border-warning' %}
+                    <span style="font-weight:600; color:var(--warning-color);">🕒 {{ task.due_label }}</span>
+                {% elif border_class == '' and task.due_date %}
+                    <span style="font-weight:500; color:var(--primary-color);">📅 {{ task.due_label }}</span>
+                {% else %}
+                    <span style="color:var(--text-secondary);">📅 {{ task.due_label }}</span>
+                {% endif %}
+
+                {% if task.task_type == 'trackable' %}
+                    <span style="background: #e0f0ff; color: #1E3A5F; padding: 3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">📊 {{ task.progress }}%</span>
+                {% endif %}
+
+                {% if task.goal %}
+                    <span style="background:var(--primary-color); color:white; padding: 3px 8px; border-radius:4px; font-size:0.75rem;">🎯 {{ task.goal.title }}</span>
+                {% endif %}
+                
+                {% if task.habit %}
+                    <span style="background:var(--success-color); color:white; padding: 3px 8px; border-radius:4px; font-size:0.75rem;">💪 {{ task.habit.habit_name }}</span>
+                {% endif %}
+                
+                {% if not task.goal and not task.habit %}
+                    <span style="color:var(--text-secondary); font-size:0.8rem;">── No links</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="task-actions" style="display:flex; gap:10px; align-items:center; flex-shrink:0;">
+            {% if not is_completed %}
+            <form action="{% url 'complete_task' task.id %}" method="post" style="margin:0;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-success" style="padding: 0.4rem 0.8rem;">✓ Complete</button>
+            </form>
+            {% endif %}
+            <button class="btn btn-sm btn-secondary edit-task-btn" 
+                    data-id="{{ task.id }}" 
+                    data-title="{{ task.title|escapejs }}" 
+                    data-desc="{{ task.description|escapejs }}" 
+                    data-start="{{ task.start_date|date:'Y-m-d' }}" 
+                    data-due="{{ task.due_date|date:'Y-m-d' }}"
+                    data-goal="{{ task.goal.id|default:'' }}"
+                    data-habit="{{ task.habit.id|default:'' }}"
+                    data-status="{{ task.status }}"
+                    data-task-type="{{ task.task_type }}"
+                    style="padding: 0.4rem 0.8rem;">Edit</button>
+            <form action="{% url 'delete_task' task.id %}" method="post" style="margin:0;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-danger" style="padding: 0.4rem 0.8rem;" onclick="return confirm('Delete this task?');">🗑️ Delete</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Trackable progress section (only for trackable, non-completed tasks) -->
+    {% if task.task_type == 'trackable' and not is_completed %}
+    <div class="task-progress-section" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--border-color);">
+        <form method="post" action="{% url 'save_task_progress' task.id %}">
+            {% csrf_token %}
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:0.85rem; color:var(--text-secondary);">0%</span>
+                <input type="range"
+                       class="range-slider"
+                       name="progress"
+                       min="0" max="100"
+                       value="{{ task.progress }}"
+                       id="slider_{{ task.id }}"
+                       oninput="updateSliderValue('{{ task.id }}', this.value)"
+                       style="flex-grow:1; cursor:pointer;">
+                <span style="font-size:0.85rem; color:var(--text-secondary);">100%</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 0.5rem;">
+                <span id="val_{{ task.id }}" style="font-weight:700; color:var(--primary-color); font-size:1rem;">{{ task.progress }}%</span>
+                <button type="submit" class="btn btn-sm btn-outline-secondary" style="padding:0.3rem 0.8rem; font-size:0.9rem;">Save Progress</button>
+            </div>
+        </form>
+        {% if task.progress == 100 %}
+        <div style="margin-top:0.75rem; background:#e8f5e9; border:1px solid var(--success-color); border-radius:6px; padding:0.6rem 1rem; font-size:0.9rem; color:#2e7d32;">
+            💡 You're at 100%!
+            <form action="{% url 'complete_task' task.id %}" method="post" style="display:inline; margin-left:8px;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-success" style="padding:0.25rem 0.6rem; font-size:0.85rem;">Mark as Complete</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>

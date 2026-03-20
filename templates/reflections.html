@@ -1,49 +1,156 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block content %}
-<div class="page-header">
-    <h1>Daily Reflections</h1>
+
+<!-- Header -->
+<div class="dashboard-header" style="margin-bottom: 2rem; display:flex; justify-content:space-between; align-items:center;">
+    <div>
+        <h1 style="color: var(--primary-color);">📓 Daily Reflection</h1>
+    </div>
+    {% if streak > 0 %}
+    <p style="font-weight:600; color:var(--text-secondary); margin:0;">📓 Current Streak: <span style="color:var(--danger-color);">🔥 {{ streak }} days</span></p>
+    {% endif %}
 </div>
 
-<div class="layout-grid">
-    <div class="form-section card">
-        <h3>Write Today's Reflection</h3>
-        {% if error_message %}
-            <div class="alert alert-warning">{{ error_message }}</div>
-        {% endif %}
-        
-        {% if already_reflected %}
-            <p class="text-success" style="padding: 1rem; background-color: #dcfce7; color: #166534; border-radius: 0.5rem; border: 1px solid #bbf7d0;">
-                You've already written a reflection today. Great job!
-            </p>
-        {% else %}
-            <form method="post">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="btn btn-primary">Save Reflection</button>
-            </form>
-        {% endif %}
+{% if total_empty %}
+<div id="emptyGlobalPlaceholder" style="text-align:center; padding: 4rem 0; background: var(--card-bg); border-radius: 0.5rem; border: 1px solid var(--border-color); margin-bottom: 2rem;">
+    <h3 style="margin-bottom:15px;">📓 No reflections yet.</h3>
+    <p style="color:var(--text-secondary); margin-bottom: 25px; font-size:1.1rem;">Start journaling today — it takes just 2 minutes!</p>
+    <button class="btn btn-primary" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})" style="padding:0.75rem 1.5rem; font-size:1.1rem;">+ Write Today's Reflection</button>
+</div>
+{% endif %}
+
+<!-- Calendar Card -->
+<div class="card" style="margin-bottom: 2rem;">
+    <div style="display:flex; justify-content:center; align-items:center; margin-bottom: 1.5rem; position:relative;">
+        <h4 style="margin:0; font-weight:700; font-size:1.1rem; letter-spacing:0.05em;">📅 {{ current_month_name|upper }} {{ current_year }}</h4>
+        <div style="position:absolute; right:0;">
+            {% if not disable_prev %}
+                <a href="?year={{ prev_year }}&month={{ prev_month }}" class="btn btn-sm btn-outline-secondary" style="margin-right:5px; font-weight:600;">&lt;</a>
+            {% else %}
+                <button class="btn btn-sm btn-outline-secondary" disabled style="margin-right:5px; font-weight:600;">&lt;</button>
+            {% endif %}
+            
+            {% if not disable_next %}
+                <a href="?year={{ next_year }}&month={{ next_month }}" class="btn btn-sm btn-outline-secondary" style="font-weight:600;">&gt;</a>
+            {% else %}
+                <button class="btn btn-sm btn-outline-secondary" disabled style="font-weight:600;">&gt;</button>
+            {% endif %}
+        </div>
     </div>
     
-    <div class="list-section">
-        <h3>Past Reflections</h3>
-        {% for reflection in reflections %}
-        <div class="card item-card">
-            <div class="item-content">
-                <h4>{{ reflection.date|date:"l, F j, Y" }}</h4>
-                <p>{{ reflection.content }}</p>
-            </div>
-            <div class="item-actions">
-                <a href="{% url 'edit_reflection' reflection.id %}" class="btn btn-primary btn-sm" style="text-decoration:none; padding: 0.25rem 0.5rem; font-size: 0.875rem;">Edit</a>
-                <form action="{% url 'delete_reflection' reflection.id %}" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this reflection?');">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                </form>
-            </div>
-        </div>
-        {% empty %}
-        <p>No reflections yet.</p>
+    <div class="calendar-grid">
+        <div class="cal-header">Mon</div>
+        <div class="cal-header">Tue</div>
+        <div class="cal-header">Wed</div>
+        <div class="cal-header">Thu</div>
+        <div class="cal-header">Fri</div>
+        <div class="cal-header">Sat</div>
+        <div class="cal-header">Sun</div>
+        
+        {% for week in cal %}
+            {% for d in week %}
+                {% if d.day == 0 %}
+                    <div class="cal-day empty"></div>
+                {% else %}
+                    <div class="cal-day {% if d.has_reflection or d.is_today %}active-day{% endif %}" 
+                         data-date="{{ d.date_str }}" 
+                         data-today="{% if d.is_today %}true{% else %}false{% endif %}"
+                         style="display:flex; flex-direction:column; align-items:center; {% if d.has_reflection or d.is_today %}cursor:pointer;{% endif %} padding: 10px 0;">
+                        
+                        <span style="font-weight:600; margin-bottom:8px; font-size:1.05rem;">{{ d.day }}</span>
+                        
+                        {% if d.has_reflection %}
+                            <span style="font-size:1.1rem;" title="Reflection exists">✅</span>
+                        {% elif d.is_today %}
+                            <span style="font-size:1.1rem;" title="Today - write your reflection">📝</span>
+                        {% else %}
+                            <span style="color:var(--text-secondary); font-weight:700;">──</span>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
         {% endfor %}
     </div>
 </div>
+
+<!-- Forms Container -->
+<div>
+    <!-- Today (Edit / Create) Mode -->
+    <div id="todayFormContainer" class="card" style="margin-bottom: 2rem;">
+        <h4 id="todayFormHeader" style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">📝 Today's Reflection</h4>
+        
+        {% if not total_empty and today_str not in reflection_dates_str %}
+            <p style="color:var(--text-secondary); margin-bottom: 1.5rem; font-style:italic;">You haven't reflected today yet. Take 2 minutes to journal your day! 📓</p>
+        {% endif %}
+        
+        <form method="post" action="{% url 'reflections_list' %}" onsubmit="return validateReflectionForm();">
+            {% csrf_token %}
+            
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display:block; font-weight:600; margin-bottom: 10px; font-size:1.1rem;">🏆 Wins</label>
+                <textarea name="wins" id="winsInput" class="form-control" rows="3" placeholder="What did you accomplish today?" style="width:100%; border-radius:6px; padding:12px; border:1px solid var(--border-color); font-size:1rem;"></textarea>
+            </div>
+            
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display:block; font-weight:600; margin-bottom: 10px; font-size:1.1rem;">⚡ Challenges</label>
+                <textarea name="challenges" id="challengesInput" class="form-control" rows="3" placeholder="What was difficult today?" style="width:100%; border-radius:6px; padding:12px; border:1px solid var(--border-color); font-size:1rem;"></textarea>
+            </div>
+            
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display:block; font-weight:600; margin-bottom: 10px; font-size:1.1rem;">🎯 Tomorrow's Plan</label>
+                <textarea name="tomorrow" id="tomorrowInput" class="form-control" rows="3" placeholder="What will you focus on tomorrow?" style="width:100%; border-radius:6px; padding:12px; border:1px solid var(--border-color); font-size:1rem;"></textarea>
+            </div>
+            
+            <div id="formErrorMsg" style="color:var(--danger-color); font-weight:600; margin-bottom:15px; display:none;">At least one field must be filled!</div>
+            
+            <div style="display:flex; justify-content:center; gap:15px; margin-top:2rem; flex-wrap:wrap;">
+                <button type="submit" id="saveReflectionBtn" class="btn btn-primary" style="padding:0.75rem 3rem; font-size:1.1rem; font-weight:600;">Save Reflection</button>
+                {% if today_reflection_id %}
+                <form method="post" action="{% url 'delete_reflection' today_reflection_id %}" style="margin:0;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger" style="padding:0.75rem 2rem; font-size:1.1rem; font-weight:600;" onclick="return confirm('Cancel and delete today\'s reflection?');">🗑️ Cancel Today</button>
+                </form>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Past Day (Read Only) Mode -->
+    <div id="readOnlyContainer" class="card" style="display:none; margin-bottom: 2rem;">
+        <h4 id="readOnlyHeader" style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">📅</h4>
+        
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display:block; font-weight:600; margin-bottom: 10px; font-size:1.1rem;">🏆 Wins</label>
+            <div id="readOnlyWins" style="width:100%; border-radius:6px; padding:15px; border:1px solid var(--border-color); background:#f8fafc; font-size:1rem; min-height:80px; white-space: pre-wrap;"></div>
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display:block; font-weight:600; margin-bottom: 10px; font-size:1.1rem;">⚡ Challenges</label>
+            <div id="readOnlyChallenges" style="width:100%; border-radius:6px; padding:15px; border:1px solid var(--border-color); background:#f8fafc; font-size:1rem; min-height:80px; white-space: pre-wrap;"></div>
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display:block; font-weight:600; margin-bottom: 10px; font-size:1.1rem;">🎯 Tomorrow's Plan</label>
+            <div id="readOnlyTomorrow" style="width:100%; border-radius:6px; padding:15px; border:1px solid var(--border-color); background:#f8fafc; font-size:1rem; min-height:80px; white-space: pre-wrap;"></div>
+        </div>
+        
+        <div style="display:flex; justify-content:center; gap: 15px; margin-top:2rem;">
+            <button id="editPastBtn" class="btn btn-outline-primary" style="padding:0.6rem 2rem; font-weight:600;">✏️ Edit</button>
+            
+            <form id="deleteReflectionForm" method="post" action="" style="margin:0;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger" style="padding:0.6rem 2rem; font-weight:600;" onclick="return confirm('Delete this reflection?');">🗑️ Delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Pass Python variables safely to JS
+    window.reflectionsData = {{ reflections_json|safe }};
+    window.todayDateStr = "{{ today_str }}";
+</script>
+<script src="{% static 'js/reflection.js' %}?v={{ request.timestamp|default:'1.1' }}"></script>
+
 {% endblock %}

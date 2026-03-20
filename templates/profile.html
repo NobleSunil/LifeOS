@@ -30,6 +30,11 @@
                 {{ form.bio }}
             </p>
             
+            <p style="margin-bottom: 1rem;">
+                <label for="{{ form.age.id_for_label }}" style="display: block; font-weight: 500; margin-bottom: 0.5rem;">Age:</label>
+                {{ form.age }}
+            </p>
+            
             <button type="submit" class="btn btn-primary" style="margin-top: 0.5rem;">Save Profile</button>
         </form>
     </div>
@@ -44,9 +49,14 @@
             <p style="color: var(--text-secondary); margin-bottom: 1rem;">Joined on {{ user.date_joined|date:"F j, Y" }}</p>
             
             {% if profile.bio %}
-            <div style="text-align: left; background-color: white; padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border-color); font-size: 0.95rem; color: var(--text-primary); line-height: 1.6;">
+            <div style="text-align: left; background-color: white; padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border-color); font-size: 0.95rem; color: var(--text-primary); line-height: 1.6; margin-bottom: 1rem;">
                 <strong>About me:</strong><br>
                 {{ profile.bio|linebreaksbr }}
+            </div>
+            {% endif %}
+            {% if profile.age %}
+            <div style="text-align: left; background-color: white; padding: 0.75rem 1rem; border-radius: 0.5rem; border: 1px solid var(--border-color); font-size: 0.95rem; color: var(--text-primary);">
+                <strong>Age:</strong> {{ profile.age }}
             </div>
             {% endif %}
         </div>

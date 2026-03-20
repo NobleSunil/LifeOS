@@ -1,0 +1,144 @@
+{% extends 'admin_base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold" style="color: var(--primary-color);">👤 Age Analytics</h2>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-lg-3 col-sm-6">
+        <div class="stat-card">
+            <div class="stat-card-title">15–20</div>
+            <p class="stat-card-value">{{ count_15_20 }} <span style="font-size:1.1rem;font-weight:600;color:var(--text-secondary);">users</span></p>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="stat-card">
+            <div class="stat-card-title">21–25</div>
+            <p class="stat-card-value">{{ count_21_25 }} <span style="font-size:1.1rem;font-weight:600;color:var(--text-secondary);">users</span></p>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="stat-card">
+            <div class="stat-card-title">26–30</div>
+            <p class="stat-card-value">{{ count_26_30 }} <span style="font-size:1.1rem;font-weight:600;color:var(--text-secondary);">users</span></p>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="stat-card">
+            <div class="stat-card-title">30+</div>
+            <p class="stat-card-value">{{ count_30_plus }} <span style="font-size:1.1rem;font-weight:600;color:var(--text-secondary);">users</span></p>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
+    <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+        <ul class="nav nav-tabs border-bottom-0" id="ageGroupTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active fw-bold text-secondary border-0" id="tab-15-20" data-bs-toggle="tab" data-bs-target="#content-15-20" type="button" role="tab" style="background:transparent;">15-20</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fw-bold text-secondary border-0" id="tab-21-25" data-bs-toggle="tab" data-bs-target="#content-21-25" type="button" role="tab" style="background:transparent;">21-25</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fw-bold text-secondary border-0" id="tab-26-30" data-bs-toggle="tab" data-bs-target="#content-26-30" type="button" role="tab" style="background:transparent;">26-30</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fw-bold text-secondary border-0" id="tab-30-plus" data-bs-toggle="tab" data-bs-target="#content-30-plus" type="button" role="tab" style="background:transparent;">30+</button>
+            </li>
+        </ul>
+        <style>
+            .nav-tabs .nav-link { padding: 10px 20px; border-bottom: 3px solid transparent !important; color: var(--text-secondary); border-radius: 0; }
+            .nav-tabs .nav-link:hover { color: var(--primary-color) !important; }
+            .nav-tabs .nav-link.active { border-bottom: 3px solid var(--accent-color) !important; color: var(--primary-color) !important; }
+        </style>
+    </div>
+    
+    <div class="card-body px-4 py-4 tab-content" id="ageGroupTabsContent">
+        <!-- 15-20 -->
+        <div class="tab-pane fade show active" id="content-15-20" role="tabpanel">
+            <h5 class="fw-bold mb-3 text-secondary">📊 TOP 5 HABITS — Age 15–20</h5>
+            {% if habits_15_20 %}
+                <ul class="list-group list-group-flush">
+                {% for habit in habits_15_20 %}
+                    <li class="list-group-item d-flex align-items-center justify-content-between px-0 py-3 border-0">
+                        <span class="fw-bold text-truncate pe-2" style="width: 140px; font-size: 1.05rem;">{{ forloop.counter }}. {{ habit.habit_name }}</span>
+                        <div class="flex-grow-1" style="font-family: monospace; letter-spacing: -1px; color: var(--accent-color); font-size: 1.1rem; overflow: hidden; white-space: nowrap;">
+                            {% widthratio habit.count habits_15_20.0.count 12 as proportion %}
+                            {% for i in "123456789012"|make_list %}{% if forloop.counter <= proportion|add:"0" %}█{% else %}<span style="color:#cbd5e1;">░</span>{% endif %}{% endfor %}
+                        </div>
+                        <span class="text-muted fw-semibold ps-2" style="min-width: 80px; text-align: right;">{{ habit.count }} users</span>
+                    </li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <div class="text-center py-5 text-muted"> <h5 class="mb-0">No users in this age group yet.</h5> </div>
+            {% endif %}
+        </div>
+        
+        <!-- 21-25 -->
+        <div class="tab-pane fade" id="content-21-25" role="tabpanel">
+            <h5 class="fw-bold mb-3 text-secondary">📊 TOP 5 HABITS — Age 21–25</h5>
+            {% if habits_21_25 %}
+                <ul class="list-group list-group-flush">
+                {% for habit in habits_21_25 %}
+                    <li class="list-group-item d-flex align-items-center justify-content-between px-0 py-3 border-0">
+                        <span class="fw-bold text-truncate pe-2" style="width: 140px; font-size: 1.05rem;">{{ forloop.counter }}. {{ habit.habit_name }}</span>
+                        <div class="flex-grow-1" style="font-family: monospace; letter-spacing: -1px; color: var(--accent-color); font-size: 1.1rem; overflow: hidden; white-space: nowrap;">
+                            {% widthratio habit.count habits_21_25.0.count 12 as proportion %}
+                            {% for i in "123456789012"|make_list %}{% if forloop.counter <= proportion|add:"0" %}█{% else %}<span style="color:#cbd5e1;">░</span>{% endif %}{% endfor %}
+                        </div>
+                        <span class="text-muted fw-semibold ps-2" style="min-width: 80px; text-align: right;">{{ habit.count }} users</span>
+                    </li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <div class="text-center py-5 text-muted"> <h5 class="mb-0">No users in this age group yet.</h5> </div>
+            {% endif %}
+        </div>
+        
+        <!-- 26-30 -->
+        <div class="tab-pane fade" id="content-26-30" role="tabpanel">
+            <h5 class="fw-bold mb-3 text-secondary">📊 TOP 5 HABITS — Age 26–30</h5>
+            {% if habits_26_30 %}
+                <ul class="list-group list-group-flush">
+                {% for habit in habits_26_30 %}
+                    <li class="list-group-item d-flex align-items-center justify-content-between px-0 py-3 border-0">
+                        <span class="fw-bold text-truncate pe-2" style="width: 140px; font-size: 1.05rem;">{{ forloop.counter }}. {{ habit.habit_name }}</span>
+                        <div class="flex-grow-1" style="font-family: monospace; letter-spacing: -1px; color: var(--accent-color); font-size: 1.1rem; overflow: hidden; white-space: nowrap;">
+                            {% widthratio habit.count habits_26_30.0.count 12 as proportion %}
+                            {% for i in "123456789012"|make_list %}{% if forloop.counter <= proportion|add:"0" %}█{% else %}<span style="color:#cbd5e1;">░</span>{% endif %}{% endfor %}
+                        </div>
+                        <span class="text-muted fw-semibold ps-2" style="min-width: 80px; text-align: right;">{{ habit.count }} users</span>
+                    </li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <div class="text-center py-5 text-muted"> <h5 class="mb-0">No users in this age group yet.</h5> </div>
+            {% endif %}
+        </div>
+        
+        <!-- 30+ -->
+        <div class="tab-pane fade" id="content-30-plus" role="tabpanel">
+            <h5 class="fw-bold mb-3 text-secondary">📊 TOP 5 HABITS — Age 30+</h5>
+            {% if habits_30_plus %}
+                <ul class="list-group list-group-flush">
+                {% for habit in habits_30_plus %}
+                    <li class="list-group-item d-flex align-items-center justify-content-between px-0 py-3 border-0">
+                        <span class="fw-bold text-truncate pe-2" style="width: 140px; font-size: 1.05rem;">{{ forloop.counter }}. {{ habit.habit_name }}</span>
+                        <div class="flex-grow-1" style="font-family: monospace; letter-spacing: -1px; color: var(--accent-color); font-size: 1.1rem; overflow: hidden; white-space: nowrap;">
+                            {% widthratio habit.count habits_30_plus.0.count 12 as proportion %}
+                            {% for i in "123456789012"|make_list %}{% if forloop.counter <= proportion|add:"0" %}█{% else %}<span style="color:#cbd5e1;">░</span>{% endif %}{% endfor %}
+                        </div>
+                        <span class="text-muted fw-semibold ps-2" style="min-width: 80px; text-align: right;">{{ habit.count }} users</span>
+                    </li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <div class="text-center py-5 text-muted"> <h5 class="mb-0">No users in this age group yet.</h5> </div>
+            {% endif %}
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

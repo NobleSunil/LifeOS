@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeOS Admin</title>
+    {% load static %}
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts: Outfit + Playfair Display (matching user page) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+    <!-- Admin Custom CSS (loaded last to override Bootstrap) -->
+    <link href="{% static 'css/admin.css' %}" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- Top Navbar -->
+    <nav class="navbar navbar-expand-lg fixed-top admin-navbar">
+        <div class="container-fluid px-4">
+            <button class="btn btn-link nav-link" id="adminSidebarToggle" style="font-size: 1.5rem; color: var(--text-color); text-decoration: none;">☰</button>
+            <a class="navbar-brand mx-auto fw-bold" href="{% url 'admin_dashboard' %}" style="color: var(--primary-color);">LifeOS Admin</a>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle fw-semibold" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: var(--text-color);">
+                        👤 {{ request.user.username|title }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="adminDropdown">
+                        <li>
+                            <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item text-danger fw-semibold">🚪 Logout</button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Sidebar Overlay -->
+    <div id="adminSidebarOverlay" class="admin-sidebar-overlay"></div>
+
+    <!-- Sidebar -->
+    <nav id="adminSidebar" class="admin-sidebar shadow-lg">
+        <div class="sidebar-header d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0">☰ LifeOS Admin</h5>
+            <button class="btn btn-link text-dark p-0" id="closeAdminSidebar" style="font-size: 1.2rem; text-decoration: none;">✕</button>
+        </div>
+        <hr class="m-0 border-secondary">
+        <div class="sidebar-menu mt-2">
+            <a href="{% url 'admin_dashboard' %}" class="menu-item {% if request.path == '/admin-panel/overview/' %}active{% endif %}">📊 Overview</a>
+            <a href="{% url 'admin_users' %}" class="menu-item {% if '/admin-panel/users/' in request.path %}active{% endif %}">👥 Users</a>
+            <a href="{% url 'admin_activity' %}" class="menu-item {% if request.path == '/admin-panel/activity/' %}active{% endif %}">📈 Activity</a>
+            <a href="{% url 'admin_habits' %}" class="menu-item {% if request.path == '/admin-panel/habits/' %}active{% endif %}">💪 Habits</a>
+            <a href="{% url 'admin_leaderboard' %}" class="menu-item {% if request.path == '/admin-panel/leaderboard/' %}active{% endif %}">🏆 Leaderboard</a>
+            <a href="{% url 'admin_age' %}" class="menu-item {% if request.path == '/admin-panel/age/' %}active{% endif %}">👤 Age Analytics</a>
+            <hr class="border-secondary">
+            <form action="{% url 'logout' %}" method="post" style="display:block;">
+                {% csrf_token %}
+                <button type="submit" class="menu-item text-danger w-100 text-start fw-bold" style="background: none; border: none;">🚪 Logout</button>
+            </form>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="admin-main-content">
+        <div class="container py-4">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Admin Custom JS -->
+    <script src="{% static 'js/admin.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
