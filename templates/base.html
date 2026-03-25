@@ -125,21 +125,81 @@
     </div>
     {% endif %}
 
-    <script src="{% static 'js/main.js' %}?v=1.5"></script>
+    <!-- ── Global Custom Delete Confirmation Modal ── -->
+    <div id="deleteConfirmModal"
+        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+        <div
+            style="background:#fff; border-radius:12px; padding:2rem; max-width:420px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.2); text-align:center;">
+            <div style="font-size:2.5rem; margin-bottom:1rem;">🗑️</div>
+            <h3 style="margin-bottom:0.75rem; color:#1C2340; font-size:1.2rem;">Confirm Delete</h3>
+            <p id="deleteConfirmMessage"
+                style="color:#6B7280; margin-bottom:1.75rem; font-size:0.95rem; line-height:1.5;"></p>
+            <div style="display:flex; gap:12px; justify-content:center;">
+                <button id="deleteCancelBtn"
+                    style="padding:0.6rem 1.5rem; border:1px solid #E5DDD3; border-radius:8px; background:#fff; color:#6B7280; font-weight:600; cursor:pointer; font-size:0.95rem;">Cancel</button>
+                <button id="deleteConfirmBtn"
+                    style="padding:0.6rem 1.5rem; border:none; border-radius:8px; background:#DC2626; color:#fff; font-weight:600; cursor:pointer; font-size:0.95rem;">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/main.js' %}?v=1.7"></script>
 
     <!-- Global delete confirmation handler -->
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        document.addEventListener('submit', function(e) {
-            var form = e.target;
-            if (form.classList.contains('confirm-delete')) {
-                var msg = form.getAttribute('data-confirm') || 'Are you sure you want to delete this?';
-                if (!window.confirm(msg)) {
-                    e.preventDefault();
-                }
+        (function () {
+            var modal = document.getElementById('deleteConfirmModal');
+            var msgEl = document.getElementById('deleteConfirmMessage');
+            var confirmBtn = document.getElementById('deleteConfirmBtn');
+            var cancelBtn = document.getElementById('deleteCancelBtn');
+            var pendingForm = null;
+
+            function showDeleteModal(message, form) {
+                pendingForm = form;
+                msgEl.textContent = message;
+                modal.style.display = 'flex';
             }
-        });
-    });
+
+            function hideDeleteModal() {
+                modal.style.display = 'none';
+                pendingForm = null;
+            }
+
+            cancelBtn.addEventListener('click', hideDeleteModal);
+            modal.addEventListener('click', function (e) {
+                if (e.target === modal) hideDeleteModal();
+            });
+
+            confirmBtn.addEventListener('click', function () {
+                if (pendingForm) {
+                    // Remove confirm-delete class so submit handler doesn't re-intercept
+                    pendingForm.classList.remove('confirm-delete');
+                    pendingForm.submit();
+                }
+                hideDeleteModal();
+            });
+
+            // Intercept .confirm-delete form submissions
+            document.addEventListener('submit', function (e) {
+                var form = e.target;
+                if (form.classList.contains('confirm-delete')) {
+                    e.preventDefault();
+                    var message = form.getAttribute('data-confirm') || 'Are you sure you want to delete this item? This cannot be undone.';
+                    showDeleteModal(message, form);
+                }
+            });
+
+            // Intercept inline onclick="return confirm(...)" on buttons — convert to custom modal
+            document.addEventListener('click', function (e) {
+                var btn = e.target.closest('button[data-delete-confirm]');
+                if (btn) {
+                    e.preventDefault();
+                    var message = btn.getAttribute('data-delete-confirm');
+                    var form = btn.closest('form');
+                    if (form) showDeleteModal(message, form);
+                }
+            });
+        })();
     </script>
 </body>
 

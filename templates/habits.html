@@ -19,7 +19,7 @@
         <!-- Entire Card -->
         <div class="card habit-card" style="border-radius: 0.5rem; border: 1px solid var(--border-color); background: #fff; transition: all 0.2s; margin-bottom: 0;">
             <!-- Collapsed Header -->
-            <div class="habit-header" data-id="{{ habit.id }}" style="padding: 1.25rem; display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+            <div class="habit-header" onclick="toggleHabit('{{ habit.id }}')" data-id="{{ habit.id }}" style="padding: 1.25rem; display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
                 <div style="display:flex; align-items:center; gap: 15px; flex-wrap:wrap;">
                     <h4 style="margin:0; font-size:1.15rem; color:var(--text-primary);">💪 <span style="font-weight:600;">{{ habit.habit_name }}</span></h4>
                     
@@ -51,12 +51,12 @@
                         <span class="habit-badge-green" style="font-weight:600; padding:4px 8px; border-radius:4px; font-size:0.9rem;">{{ habit.completion_percentage_today }}%</span>
                     {% endif %}
                     
-                    <span class="expand-icon" id="icon-{{ habit.id }}" style="font-size:1.2rem; color:var(--text-secondary); transition: transform 0.3s ease;">▸</span>
+                    <span class="expand-icon" id="toggle-{{ habit.id }}" style="font-size:1.2rem; color:var(--text-secondary); transition: transform 0.3s ease;">▸</span>
                 </div>
             </div>
 
             <!-- Expanded Content -->
-            <div class="habit-details" id="details-{{ habit.id }}" style="display:none; padding: 0 1.25rem 1.25rem 1.25rem; border-top: 1px solid var(--border-color);">
+            <div class="habit-details" id="expand-{{ habit.id }}" style="display:none; padding: 0 1.25rem 1.25rem 1.25rem; border-top: 1px solid var(--border-color);">
                 
                 <!-- Today's Progress: per-mode UI -->
                 <div style="margin-top: 1.25rem;">
@@ -168,11 +168,11 @@
                             data-id="{{ habit.id }}" 
                             data-name="{{ habit.habit_name|escapejs }}" 
                             data-goal="{{ habit.goal.id|default:'' }}"
-                            data-tracking-mode="{{ habit.tracking_mode }}"
+                            data-tracking-mode="{{ habit.habit_type }}"
                             style="padding:0.4rem 1rem;">Edit</button>
-                    <form action="{% url 'delete_habit' habit.id %}" method="post" style="margin:0;">
+                    <form action="{% url 'delete_habit' habit.id %}" method="post" style="margin:0;" class="confirm-delete" data-confirm="Delete this habit? All completion logs will be lost.">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-sm btn-danger" style="padding:0.4rem 1rem;" onclick="return confirm('Delete this habit? All completion logs will be lost.');">🗑️ Delete</button>
+                        <button type="submit" class="btn btn-sm btn-danger" style="padding:0.4rem 1rem;">🗑️ Delete</button>
                     </form>
                 </div>
             </div>

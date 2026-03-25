@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const autoModal = document.getElementById('autoCompleteGoalModal');
         document.getElementById('autoCompleteGoalName').innerText = goalTitle;
-        document.getElementById('autoCompleteGoalForm').action = `/goals/complete/${goalId}/`;
+        document.getElementById('autoCompleteGoalForm').action = `/goals/${goalId}/complete/`;
         
         if (autoModal) autoModal.style.display = 'block';
         autoTriggered = true;

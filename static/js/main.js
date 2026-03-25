@@ -62,12 +62,19 @@ document.addEventListener('DOMContentLoaded', () => {
 function toggleGoal(id) {
     const el = document.getElementById(`expand-${id}`);
     const toggle = document.getElementById(`toggle-${id}`);
-    if(el && toggle) {
-        if(el.style.display === 'none' || el.style.display === '') {
-            el.style.display = 'block';
+    if (el && toggle) {
+        const isExpanded = el.getAttribute('data-expanded') === 'true';
+        if (!isExpanded) {
+            el.style.maxHeight = '2000px';
+            el.style.paddingBottom = '1.5rem';
+            el.style.borderTopWidth = '1px';
+            el.setAttribute('data-expanded', 'true');
             toggle.style.transform = 'rotate(90deg)';
         } else {
-            el.style.display = 'none';
+            el.style.maxHeight = '0';
+            el.style.paddingBottom = '0';
+            el.style.borderTopWidth = '0px';
+            el.setAttribute('data-expanded', 'false');
             toggle.style.transform = 'rotate(0deg)';
         }
     }

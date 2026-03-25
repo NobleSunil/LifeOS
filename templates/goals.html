@@ -18,10 +18,10 @@
 <!-- List -->
 <div id="goalsContainer" style="display:flex; flex-direction:column; gap:1.5rem;">
     {% for goal in goals %}
-    <div class="card goal-card {% if goal.status == 'Completed' %}completed-row{% endif %}" data-status="{{ goal.status }}" data-progress="{{ goal.progress|floatformat:0 }}" style="padding: 0; overflow:hidden; transition: all 0.3s ease; display: flex; flex-direction:column;">
+    <div class="card goal-card {% if goal.status == 'Completed' %}completed-row{% endif %}" data-status="{{ goal.status }}" data-progress="{{ goal.progress|floatformat:0 }}" style="padding: 0; transition: box-shadow 0.2s ease; display: block;">
         
         <!-- Collapsed Row -->
-        <div class="goal-header" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding: 1.5rem; transition: background 0.2s;">
+        <div class="goal-header" onclick="toggleGoal('{{ goal.id }}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding: 1.5rem; transition: background 0.2s;">
             <!-- Left Info -->
             <div style="display:flex; flex-direction:column; gap:12px; flex-grow:1; margin-right: 20px;">
                 <div style="display:flex; align-items:center; gap: 15px; flex-wrap:wrap;">
@@ -42,11 +42,11 @@
                 </div>
             </div>
             <!-- Toggle Icon -->
-            <div class="expand-icon" style="font-size: 1.5rem; color: var(--text-secondary); transition: transform 0.3s ease; width: 30px; text-align:center;">▸</div>
+            <div class="expand-icon" id="toggle-{{ goal.id }}" style="font-size: 1.5rem; color: var(--text-secondary); transition: transform 0.3s ease; width: 30px; text-align:center;">▸</div>
         </div>
 
         <!-- Expanded Content -->
-        <div class="goal-details" style="display:none; padding: 0 1.5rem 1.5rem 1.5rem; border-top: 1px solid var(--border-color); background: #fdfdfd;">
+        <div class="goal-details" id="expand-{{ goal.id }}" style="max-height:0; overflow:hidden; transition: max-height 0.35s ease; padding: 0 1.5rem; border-top: 0px solid var(--border-color); background: #fdfdfd;">
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-top: 1.5rem;">
                 
                 <!-- Tasks List -->
@@ -96,11 +96,11 @@
             <!-- Actions -->
             <div style="display:flex; justify-content:flex-end; gap: 10px; align-items:center;">
                 <button class="btn btn-sm btn-secondary edit-goal-btn" data-id="{{ goal.id }}" data-title="{{ goal.title|escapejs }}" data-desc="{{ goal.description|escapejs }}" data-status="{{ goal.status }}" data-type="{{ goal.goal_type|default:'task_based' }}" data-target="{{ goal.target_days|default:'' }}">Edit</button>
-                <form action="{% url 'delete_goal' goal.id %}" method="post" style="margin:0;">
+                <form action="{% url 'delete_goal' goal.id %}" method="post" style="margin:0;" class="confirm-delete" data-confirm="Delete this goal? All linked tasks and habits will be unlinked.">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this goal? All linked tasks and habits will be unlinked.');">Delete</button>
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                 </form>
-                {% if goal.status == 'Active' %}
+                {% if goal.status == 'Active' and goal.progress >= 100 %}
                 <form action="{% url 'complete_goal' goal.id %}" method="post" style="margin:0;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-sm btn-success">Mark Complete</button>

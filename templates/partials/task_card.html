@@ -59,9 +59,9 @@
                         data-status="{{ task.status }}"
                         data-task-type="{{ task.task_type }}"
                         style="padding: 0.4rem 0.8rem;">Edit</button>
-                <form action="{% url 'delete_task' task.id %}" method="post" style="margin:0;">
+                <form action="{% url 'delete_task' task.id %}" method="post" style="margin:0;" class="confirm-delete" data-confirm="Delete this task?">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-danger" style="padding: 0.4rem 0.8rem;" onclick="return confirm('Delete this task?');">🗑️ Delete</button>
+                    <button type="submit" class="btn btn-sm btn-danger" style="padding: 0.4rem 0.8rem;">🗑️ Delete</button>
                 </form>
 
             {% elif task.task_type == 'trackable' %}
@@ -76,9 +76,9 @@
                         data-status="{{ task.status }}"
                         data-task-type="{{ task.task_type }}"
                         style="padding: 0.4rem 0.8rem;">Edit</button>
-                <form action="{% url 'delete_task' task.id %}" method="post" style="margin:0;">
+                <form action="{% url 'delete_task' task.id %}" method="post" style="margin:0;" class="confirm-delete" data-confirm="Delete this task?">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-danger" style="padding: 0.4rem 0.8rem;" onclick="return confirm('Delete this task?');">🗑️ Delete</button>
+                    <button type="submit" class="btn btn-sm btn-danger" style="padding: 0.4rem 0.8rem;">🗑️ Delete</button>
                 </form>
             {% endif %}
         </div>

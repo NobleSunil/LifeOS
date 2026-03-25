@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const fromD = fromInput.value;
             const toD = toInput.value;
             a.href = url;
-            a.download = `LifeOS_Report_${fromD}_to_${toD}.csv`;
+            a.download = `LifeOS_Report_${fromD}_to_${toD}.xlsx`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);

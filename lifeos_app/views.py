@@ -164,12 +164,19 @@ def dashboard(request):
     # --- Goal Progress ---
     active_goals = Goal.objects.filter(user=user, status='Active')
     for g in active_goals:
-        total = g.tasks.count()
-        completed = g.tasks.filter(status='Completed').count()
-        g.progress_pct = (completed / total * 100) if total > 0 else 0
-        g.completed_count = completed
-        g.total_count = total
-        
+        # Use the model property which correctly handles both task-based and habit-based goals
+        g.progress_pct = g.progress_percentage
+
+        if g.goal_type == 'habit_based':
+            # For habit-based goals show habit count instead of tasks
+            g.completed_count = round(g.progress_percentage)
+            g.total_count = 100  # percentage out of 100
+        else:
+            total = g.tasks.count()
+            completed = g.tasks.filter(status='Completed').count()
+            g.completed_count = completed
+            g.total_count = total
+
         if g.progress_pct <= 30: g.progress_color = 'danger'
         elif g.progress_pct <= 70: g.progress_color = 'warning'
         else: g.progress_color = 'success'
@@ -339,17 +346,6 @@ def complete_goal(request, goal_id):
         goal.save()
     return redirect('goals_list')
 
-@login_required
-def edit_goal(request, goal_id):
-    goal = get_object_or_404(Goal, id=goal_id, user=request.user)
-    if request.method == 'POST':
-        form = GoalForm(request.POST, instance=goal)
-        if form.is_valid():
-            form.save()
-            return redirect('goals_list')
-    else:
-        form = GoalForm(instance=goal)
-    return render(request, 'edit_goal.html', {'form': form, 'goal': goal})
 
 # ==================== HABITS ====================
 # Updated streak calculation
@@ -457,7 +453,8 @@ def edit_habit(request, habit_id):
 @login_required
 def delete_habit(request, habit_id):
     habit = get_object_or_404(Habit, id=habit_id, user=request.user)
-    habit.delete()
+    if request.method == 'POST':
+        habit.delete()
     return redirect('habits_list')
 
 @login_required
@@ -849,11 +846,15 @@ def reports_page(request):
 
 @login_required
 def generate_report(request):
+    import io
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+
     from_date = request.GET.get('from_date')
     to_date = request.GET.get('to_date')
     include = request.GET.getlist('include')
 
-    # FIX 3: check if any data exists before generating CSV
+    # Check if any data exists before generating report
     has_data = False
     if 'tasks' in include and Task.objects.filter(
         user=request.user, created_at__date__gte=from_date, created_at__date__lte=to_date
@@ -872,90 +873,105 @@ def generate_report(request):
     ).exists():
         has_data = True
 
-    # FIX 3: return friendly JSON error instead of empty CSV
     if not has_data:
         from django.http import JsonResponse
         return JsonResponse({'error': 'No data found for the selected date range.'}, status=404)
 
-    response = HttpResponse(content_type='text/csv')
-    filename = f'LifeOS_Report_{from_date}_to_{to_date}.csv'
-    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    # Helper to style header rows
+    header_font = Font(bold=True, color='FFFFFF')
+    header_fill = PatternFill(fill_type='solid', fgColor='1C2340')
 
-    writer = csv.writer(response)
+    def style_header(ws, headers):
+        ws.append(headers)
+        for cell in ws[ws.max_row]:
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = Alignment(horizontal='center')
 
-    # TASKS SECTION
+    wb = Workbook()
+    wb.remove(wb.active)  # Remove default empty sheet
+
+    # TASKS SHEET
     if 'tasks' in include:
-        writer.writerow(['==== TASKS ===='])
-        writer.writerow([
-            'Title', 'Description', 'Status', 'Start Date', 'Due Date', 'Linked Goal', 'Created At'
-        ])
+        ws = wb.create_sheet('Tasks')
+        style_header(ws, ['Title', 'Description', 'Status', 'Start Date', 'Due Date', 'Linked Goal', 'Created At'])
         tasks = Task.objects.filter(
             user=request.user, created_at__date__gte=from_date, created_at__date__lte=to_date
         )
         for task in tasks:
-            writer.writerow([
+            ws.append([
                 task.title,
                 task.description or '',
                 task.status,
-                task.start_date or '',
-                task.due_date or '',
+                str(task.start_date) if task.start_date else '',
+                str(task.due_date) if task.due_date else '',
                 task.goal.title if task.goal else '',
                 task.created_at.strftime('%Y-%m-%d')
             ])
-        writer.writerow([])
+        for col in ws.columns:
+            ws.column_dimensions[col[0].column_letter].auto_size = True
 
-    # HABITS SECTION
+    # HABITS SHEET
     if 'habits' in include:
-        writer.writerow(['==== HABITS ===='])
-        writer.writerow(['Habit Name', 'Linked Goal', 'Date', 'Completion %'])
+        ws = wb.create_sheet('Habits')
+        style_header(ws, ['Habit Name', 'Linked Goal', 'Date', 'Completion %'])
         completions = HabitCompletion.objects.filter(
             habit__user=request.user, date__gte=from_date, date__lte=to_date
-        ).select_related('habit')
-        for completion in completions:
-            writer.writerow([
-                completion.habit.habit_name,
-                completion.habit.goal.title if completion.habit.goal else '',
-                completion.date,
-                completion.completion_percentage
+        ).select_related('habit', 'habit__goal')
+        for c in completions:
+            ws.append([
+                c.habit.habit_name,
+                c.habit.goal.title if c.habit.goal else '',
+                str(c.date),
+                c.completion_percentage
             ])
-        writer.writerow([])
 
-    # GOALS SECTION
+    # GOALS SHEET
     if 'goals' in include:
-        writer.writerow(['==== GOALS ===='])
-        writer.writerow(['Title', 'Description', 'Status', 'Progress %', 'Tasks Linked', 'Habits Linked', 'Created At'])
+        ws = wb.create_sheet('Goals')
+        style_header(ws, ['Title', 'Description', 'Status', 'Progress %', 'Tasks Linked', 'Habits Linked', 'Created At'])
         goals = Goal.objects.filter(
             user=request.user, created_at__date__gte=from_date, created_at__date__lte=to_date
         )
         for goal in goals:
-            total = Task.objects.filter(goal=goal).count()
+            tasks_linked = Task.objects.filter(goal=goal).count()
             habits_linked = Habit.objects.filter(goal=goal).count()
-            writer.writerow([
+            ws.append([
                 goal.title,
                 goal.description or '',
                 goal.status,
-                f'{goal.progress_percentage}%',
-                total,
+                round(goal.progress_percentage, 1),
+                tasks_linked,
                 habits_linked,
                 goal.created_at.strftime('%Y-%m-%d')
             ])
-        writer.writerow([])
 
-    # REFLECTIONS SECTION
+    # REFLECTIONS SHEET
     if 'reflections' in include:
-        writer.writerow(['==== REFLECTIONS ===='])
-        writer.writerow(['Date', 'Wins', 'Challenges', "Tomorrow's Plan"])
+        ws = wb.create_sheet('Reflections')
+        style_header(ws, ['Date', 'Wins', 'Challenges', "Tomorrow's Plan"])
         reflections = Reflection.objects.filter(
             user=request.user, date__gte=from_date, date__lte=to_date
         )
-        for reflection in reflections:
-            writer.writerow([
-                reflection.date,
-                reflection.content.get('wins', ''),
-                reflection.content.get('challenges', ''),
-                reflection.content.get('tomorrow', '')
+        for r in reflections:
+            ws.append([
+                str(r.date),
+                r.content.get('wins', ''),
+                r.content.get('challenges', ''),
+                r.content.get('tomorrow', '')
             ])
 
+    # Write to buffer and return as xlsx response
+    buffer = io.BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+
+    filename = f'LifeOS_Report_{from_date}_to_{to_date}.xlsx'
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
 
 # ==================== ADMIN DASHBOARD ====================

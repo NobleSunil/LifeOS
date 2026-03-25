@@ -1,25 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- 1. Inline Expand Logic ---
-    const goalHeaders = document.querySelectorAll('.goal-header');
-    goalHeaders.forEach(header => {
-        header.addEventListener('click', (e) => {
-            // Don't expand if user clicks on actionable element
-            if(e.target.tagName.toLowerCase() === 'button' || e.target.tagName.toLowerCase() === 'a') return;
-            
-            const card = header.closest('.goal-card');
-            const details = card.querySelector('.goal-details');
-            const icon = header.querySelector('.expand-icon');
-            
-            if (details.style.display === 'none' || details.style.display === '') {
-                details.style.display = 'block';
-                icon.innerText = '▾';
-            } else {
-                details.style.display = 'none';
-                icon.innerText = '▸';
-            }
-        });
-    });
 
     // --- 2. Filter Tabs Logic ---
     const filterTabs = document.querySelectorAll('.filter-tab');
@@ -65,11 +45,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             goalCards.forEach(card => {
                 if (filter === 'All') {
-                    card.style.display = 'flex';
+                    card.style.display = 'block';
                 } else if (filter === 'Active') {
-                    card.style.display = card.getAttribute('data-status') === 'Active' ? 'flex' : 'none';
+                    card.style.display = card.getAttribute('data-status') === 'Active' ? 'block' : 'none';
                 } else if (filter === 'Completed') {
-                    card.style.display = card.getAttribute('data-status') === 'Completed' ? 'flex' : 'none';
+                    card.style.display = card.getAttribute('data-status') === 'Completed' ? 'block' : 'none';
                 }
             });
             
@@ -193,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const goalId = card.querySelector('.edit-goal-btn').getAttribute('data-id');
             
             document.getElementById('autoCompleteGoalTitle').innerText = title;
-            document.getElementById('autoCompleteForm').action = `/goals/complete/${goalId}/`;
+            document.getElementById('autoCompleteForm').action = `/goals/${goalId}/complete/`;
             
             autoModal.style.display = 'block';
             triggeredAuto = true;

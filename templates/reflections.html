@@ -111,9 +111,9 @@
         
         {% if today_reflection_id %}
         <div style="display:flex; justify-content:center; margin-top: 15px;">
-            <form method="post" action="{% url 'delete_reflection' today_reflection_id %}" style="margin:0;">
+            <form method="post" action="{% url 'delete_reflection' today_reflection_id %}" style="margin:0;" class="confirm-delete" data-confirm="Cancel and delete today's reflection?">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-outline-danger" style="padding:0.75rem 2rem; font-size:1.1rem; font-weight:600;" onclick="return confirm('Cancel and delete today\'s reflection?');">🗑️ Cancel Today</button>
+                <button type="submit" class="btn btn-outline-danger" style="padding:0.75rem 2rem; font-size:1.1rem; font-weight:600;">🗑️ Cancel Today</button>
             </form>
         </div>
         {% endif %}

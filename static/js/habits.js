@@ -1,25 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- 1. Inline Expand Toggle ---
-    const headers = document.querySelectorAll('.habit-header');
-    
-    headers.forEach(header => {
-        header.addEventListener('click', (e) => {
-            const habitId = header.getAttribute('data-id');
-            const details = document.getElementById(`details-${habitId}`);
-            const icon = document.getElementById(`icon-${habitId}`);
-            
-            if (details.style.display === 'none') {
-                details.style.display = 'block';
-                icon.style.transform = 'rotate(90deg)';
-                header.style.backgroundColor = '#f8fafc';
-            } else {
-                details.style.display = 'none';
-                icon.style.transform = 'rotate(0deg)';
-                header.style.backgroundColor = 'transparent';
-            }
-        });
-    });
 
     // --- 2. Habit Slider Live Update ---
     window.updateHabitSlider = function(habitId, value) {
@@ -46,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (sliderRadio) sliderRadio.checked = true;
 
         // Enable all radios (for new habit)
-        document.querySelectorAll('#habitForm input[name="tracking_mode"]').forEach(r => {
+        document.querySelectorAll('#habitForm input[name="habit_type"]').forEach(r => {
             r.disabled = false;
         });
         if (trackingModeReadonlyNote) trackingModeReadonlyNote.style.display = 'none';
@@ -75,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Set & lock tracking mode (cannot be changed after creation)
             const mode = btn.getAttribute('data-tracking-mode') || 'manual_slider';
-            document.querySelectorAll('#habitForm input[name="tracking_mode"]').forEach(r => {
+            document.querySelectorAll('#habitForm input[name="habit_type"]').forEach(r => {
                 r.checked = (r.value === mode);
                 r.disabled = true;  // lock all radios on edit
             });
