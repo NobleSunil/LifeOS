@@ -64,6 +64,41 @@ def get_habit_streak(habit, today):
             
     return streak
 
+def get_task_score(user):
+    tasks = Task.objects.filter(user=user)
+    if not tasks.exists():
+        return 0
+    total_possible = tasks.count() * 100
+    actual_score = 0
+    for task in tasks:
+        if task.status == 'Completed':
+            actual_score += 100
+        elif task.task_type == 'trackable':
+            actual_score += task.progress
+    return (actual_score / total_possible) * 100
+
+def get_habit_score(user, target_date):
+    from datetime import date
+    habits = Habit.objects.filter(user=user)
+    if not habits.exists():
+        return 0
+    total = 0
+    for habit in habits:
+        completion = HabitCompletion.objects.filter(
+            habit=habit,
+            date=target_date
+        ).first()
+        total += (
+            completion.completion_percentage
+            if completion else 0
+        )
+    return total / habits.count()
+
+def get_daily_score(user, target_date):
+    habit_score = get_habit_score(user, target_date)
+    task_score = get_task_score(user)
+    return round((habit_score + task_score) / 2)
+
 @login_required
 def dashboard(request):
     user = request.user
@@ -159,18 +194,11 @@ def dashboard(request):
     
     all_zeroes = True
     for d in last_7_days:
-        day_avg_query = HabitCompletion.objects.filter(habit__user=user, date=d).aggregate(Avg('completion_percentage'))
-        habit_score = day_avg_query['completion_percentage__avg'] or 0
-        
-        day_total_tasks = Task.objects.filter(user=user, due_date=d).count()
-        day_completed_tasks = Task.objects.filter(user=user, due_date=d, status='Completed').count()
-        task_score = (day_completed_tasks / day_total_tasks * 100) if day_total_tasks > 0 else 0
-        
-        productivity_score = round((habit_score + task_score) / 2)
+        productivity_score = get_daily_score(user, d)
         chart_data.append(productivity_score)
         if productivity_score > 0:
             all_zeroes = False
-            
+
     has_activity_data = not all_zeroes
     avg_score = round(sum(chart_data) / len(chart_data)) if chart_data else 0
     
@@ -209,54 +237,106 @@ def profile_view(request):
     return render(request, 'profile.html', {'form': form, 'profile': profile})
 
 # ==================== GOALS ====================
+# Helper: check and trigger goal complete prompt
+def check_goal_completion(goal):
+    if goal and goal.progress_percentage == 100:
+        return True
+    return False
+
+# Goals list view
 @login_required
 def goals_list(request):
-    goals = Goal.objects.filter(user=request.user).order_by('-created_at')
-    
-    for g in goals:
-        total = g.tasks.count()
-        completed = g.tasks.filter(status='Completed').count()
-        g.task_count = total          # renamed to avoid clashing with Goal @property
-        g.done_count = completed      # renamed to avoid clashing with Goal @property
-        g.habit_count = g.habits.count()
-        
-        if total == 0:
-            g.progress = 0
-        else:
-            g.progress = (completed / total) * 100
-            
-        if g.progress <= 30:
-            g.progress_color = 'danger'
-        elif g.progress <= 70:
-            g.progress_color = 'warning'
-        elif g.progress <= 99:
-            g.progress_color = 'primary'
-        else:
-            g.progress_color = 'success'
+    goals = Goal.objects.filter(
+        user=request.user
+    ).order_by('-created_at')
 
+    # Attach progress and completion flag
+    for goal in goals:
+        goal.progress = goal.progress_percentage
+        goal.show_complete_prompt = (
+            goal.progress == 100 and
+            goal.status == 'Active'
+        )
+
+    context = {
+        'goals': goals,
+        'active_goals': goals.filter(status='Active'),
+        'completed_goals': goals.filter(
+            status='Completed'
+        ),
+    }
+    return render(request, 'goals.html', context)
+
+# Create goal view
+@login_required
+def create_goal(request):
     if request.method == 'POST':
         form = GoalForm(request.POST)
         if form.is_valid():
-            g = form.save(commit=False)
-            g.user = request.user
-            g.save()
+            goal = form.save(commit=False)
+            goal.user = request.user
+            goal.save()
             return redirect('goals_list')
     else:
         form = GoalForm()
-    return render(request, 'goals.html', {'goals': goals, 'form': form})
+    return render(
+        request,
+        'goal_form.html',
+        {'form': form}
+    )
 
+# Edit goal view
+@login_required
+def edit_goal(request, goal_id):
+    goal = get_object_or_404(
+        Goal,
+        id=goal_id,
+        user=request.user
+    )
+    if request.method == 'POST':
+        form = GoalForm(request.POST, instance=goal)
+        if form.is_valid():
+            form.save()
+            return redirect('goals_list')
+    else:
+        form = GoalForm(instance=goal)
+    return render(
+        request,
+        'goal_form.html',
+        {'form': form, 'goal': goal}
+    )
+
+# Delete goal view
 @login_required
 def delete_goal(request, goal_id):
-    goal = get_object_or_404(Goal, id=goal_id, user=request.user)
-    goal.delete()
-    return redirect('goals_list')
+    goal = get_object_or_404(
+        Goal,
+        id=goal_id,
+        user=request.user
+    )
+    if request.method == 'POST':
+        goal.delete()
+        return redirect('goals_list')
+    return render(
+        request,
+        'confirm_delete.html',
+        {'object': goal}
+    )
 
+# Complete goal view
 @login_required
 def complete_goal(request, goal_id):
-    goal = get_object_or_404(Goal, id=goal_id, user=request.user)
-    goal.status = 'Completed'
-    goal.completed_at = timezone.now()
-    goal.save()
+    goal = get_object_or_404(
+        Goal,
+        id=goal_id,
+        user=request.user
+    )
+    # Only allow complete at 100%
+    if goal.progress_percentage == 100:
+        from django.utils import timezone
+        goal.status = 'Completed'
+        goal.completed_at = timezone.now()
+        goal.save()
     return redirect('goals_list')
 
 @login_required
@@ -272,12 +352,10 @@ def edit_goal(request, goal_id):
     return render(request, 'edit_goal.html', {'form': form, 'goal': goal})
 
 # ==================== HABITS ====================
+# Updated streak calculation
 def calculate_streak(habit):
-    """Calculate streak based on tracking mode:
-    - manual_checkbox: counts consecutive days with percentage == 100
-    - manual_slider / task_driven: counts consecutive days with percentage > 0
-    """
-    today = datetime.date.today()
+    from datetime import date, timedelta
+    today = date.today()
     streak = 0
     current_date = today
 
@@ -287,34 +365,49 @@ def calculate_streak(habit):
             date=current_date
         ).first()
 
-        if habit.tracking_mode == 'manual_checkbox':
-            completed = completion and completion.completion_percentage == 100
+        if habit.habit_type == 'checkbox':
+            completed = (
+                completion and
+                completion.completion_percentage == 100
+            )
         else:
-            completed = completion and completion.completion_percentage > 0
+            completed = (
+                completion and
+                completion.completion_percentage > 0
+            )
 
         if completed:
             streak += 1
-            current_date -= datetime.timedelta(days=1)
+            current_date -= timedelta(days=1)
         else:
             break
 
     return streak
 
+# Updated weekly data
 def get_weekly_data(habit):
-    today = datetime.date.today()
+    from datetime import date, timedelta
+    today = date.today()
     weekly_data = []
 
     for i in range(6, -1, -1):
-        day = today - datetime.timedelta(days=i)
+        day = today - timedelta(days=i)
         completion = HabitCompletion.objects.filter(
             habit=habit,
             date=day
         ).first()
 
+        percentage = (
+            completion.completion_percentage
+            if completion else 0
+        )
+        logged = completion is not None
+
         weekly_data.append({
             'day': day.strftime('%a'),
-            'percentage': completion.completion_percentage if completion else 0,
-            'logged': completion is not None,  # whether any record exists for this day
+            'date': day,
+            'percentage': percentage,
+            'logged': logged
         })
 
     return weekly_data
@@ -332,9 +425,6 @@ def habits_list(request):
         habit.completion_percentage_today = completion.completion_percentage if completion else 0
         habit.current_streak = calculate_streak(habit)
         habit.weekly_data = get_weekly_data(habit)
-        habit.linked_tasks = habit.tasks.all()
-        # For task-driven habits: only show trackable tasks
-        habit.linked_trackable_tasks = habit.tasks.filter(task_type='trackable')
 
     if request.method == 'POST':
         form = HabitForm(request.POST)
@@ -349,7 +439,8 @@ def habits_list(request):
     context = {
         'habits': habits,
         'user_goals': user_goals,
-        'form': form
+        'form': form,
+        'today_completion': 0 # template fallback if needed
     }
     return render(request, 'habits.html', context)
 
@@ -366,58 +457,49 @@ def edit_habit(request, habit_id):
 @login_required
 def delete_habit(request, habit_id):
     habit = get_object_or_404(Habit, id=habit_id, user=request.user)
-    habit.delete()  # Cascade deletes HabitCompletions automatically
+    habit.delete()
     return redirect('habits_list')
 
 @login_required
 def complete_habit(request, habit_id):
-    """Legacy URL handler — delegates to save_habit_log for back-compat."""
     return save_habit_log(request, habit_id)
 
+# Save habit log view
 @login_required
 def save_habit_log(request, habit_id):
-    """Save habit completion log. Behavior differs by tracking_mode."""
-    habit = get_object_or_404(Habit, id=habit_id, user=request.user)
-    today = datetime.date.today()
     if request.method == 'POST':
-        if habit.tracking_mode == 'manual_slider':
-            try:
-                percentage = int(request.POST.get('percentage', 0))
-                percentage = max(0, min(100, percentage))
-            except (ValueError, TypeError):
-                percentage = 0
+        from datetime import date
+        habit = get_object_or_404(
+            Habit,
+            id=habit_id,
+            user=request.user
+        )
+        today = date.today()
 
-        elif habit.tracking_mode == 'manual_checkbox':
-            is_done = request.POST.get('is_done') == 'true'
+        if habit.habit_type == 'checkbox':
+            is_done = request.POST.get(
+                'is_done'
+            ) == 'true'
             percentage = 100 if is_done else 0
 
-        elif habit.tracking_mode == 'task_driven':
-            # task-driven habits cannot be manually logged
-            return redirect('habits_list')
+        elif habit.habit_type == 'slider':
+            percentage = int(
+                request.POST.get('percentage', 0)
+            )
+            percentage = max(0, min(100, percentage))
         else:
             percentage = 0
 
         HabitCompletion.objects.update_or_create(
             habit=habit,
             date=today,
-            defaults={'completion_percentage': percentage}
+            defaults={
+                'completion_percentage': percentage
+            }
         )
-    return redirect('habits_list')
+        return redirect('habits_list')
 
 # ==================== TASKS ====================
-
-def update_task_driven_habit(habit):
-    """Recalculate task-driven habit completion % as average of linked trackable task progress."""
-    trackable_tasks = Task.objects.filter(habit=habit, task_type='trackable')
-    if not trackable_tasks.exists():
-        return
-    avg = sum(t.progress for t in trackable_tasks) / trackable_tasks.count()
-    HabitCompletion.objects.update_or_create(
-        habit=habit,
-        date=datetime.date.today(),
-        defaults={'completion_percentage': round(avg)}
-    )
-
 
 @login_required
 def tasks_list(request):
@@ -486,39 +568,64 @@ def tasks_list(request):
     }
     return render(request, 'tasks.html', context)
 
-@login_required
-def delete_task(request, task_id):
-    task = get_object_or_404(Task, id=task_id, user=request.user)
-    task.delete()
-    return redirect('tasks_list')
-
-@login_required
-def complete_task(request, task_id):
-    task = get_object_or_404(Task, id=task_id, user=request.user)
-    task.status = 'Completed'
-    task.progress = 100  # completing always sets progress to 100
-    task.save()
-    # if linked to a task-driven habit, recalculate it
-    if task.habit and task.habit.tracking_mode == 'task_driven':
-        update_task_driven_habit(task.habit)
-    return redirect('tasks_list')
-
+# Save task progress view
 @login_required
 def save_task_progress(request, task_id):
-    """Save progress % for a trackable task and recalculate any linked task-driven habit."""
     if request.method == 'POST':
-        task = get_object_or_404(Task, id=task_id, user=request.user, task_type='trackable')
-        try:
-            progress = int(request.POST.get('progress', 0))
-            progress = max(0, min(100, progress))
-        except (ValueError, TypeError):
-            progress = 0
+        task = get_object_or_404(
+            Task,
+            id=task_id,
+            user=request.user,
+            task_type='trackable'
+        )
+        progress = int(
+            request.POST.get('progress', 0)
+        )
+        progress = max(0, min(100, progress))
         task.progress = progress
         task.save()
-        # recalculate linked task-driven habit if any
-        if task.habit and task.habit.tracking_mode == 'task_driven':
-            update_task_driven_habit(task.habit)
+
+        # Check goal completion
+        goal_complete = False
+        goal_title = ''
+        goal_id = None
+        if task.goal:
+            if task.goal.progress_percentage == 100:
+                goal_complete = True
+                goal_title = task.goal.title
+                goal_id = task.goal.id
+
+        return redirect('tasks_list')
+
+# Complete task view
+@login_required
+def complete_task(request, task_id):
+    task = get_object_or_404(
+        Task,
+        id=task_id,
+        user=request.user
+    )
+    task.status = 'Completed'
+    task.progress = 100
+    task.save()
     return redirect('tasks_list')
+
+# Delete task view
+@login_required
+def delete_task(request, task_id):
+    task = get_object_or_404(
+        Task,
+        id=task_id,
+        user=request.user
+    )
+    if request.method == 'POST':
+        task.delete()
+        return redirect('tasks_list')
+    return render(
+        request,
+        'confirm_delete.html',
+        {'object': task}
+    )
 
 @login_required
 def edit_task(request, task_id):
@@ -746,6 +853,30 @@ def generate_report(request):
     to_date = request.GET.get('to_date')
     include = request.GET.getlist('include')
 
+    # FIX 3: check if any data exists before generating CSV
+    has_data = False
+    if 'tasks' in include and Task.objects.filter(
+        user=request.user, created_at__date__gte=from_date, created_at__date__lte=to_date
+    ).exists():
+        has_data = True
+    if 'habits' in include and HabitCompletion.objects.filter(
+        habit__user=request.user, date__gte=from_date, date__lte=to_date
+    ).exists():
+        has_data = True
+    if 'goals' in include and Goal.objects.filter(
+        user=request.user, created_at__date__gte=from_date, created_at__date__lte=to_date
+    ).exists():
+        has_data = True
+    if 'reflections' in include and Reflection.objects.filter(
+        user=request.user, date__gte=from_date, date__lte=to_date
+    ).exists():
+        has_data = True
+
+    # FIX 3: return friendly JSON error instead of empty CSV
+    if not has_data:
+        from django.http import JsonResponse
+        return JsonResponse({'error': 'No data found for the selected date range.'}, status=404)
+
     response = HttpResponse(content_type='text/csv')
     filename = f'LifeOS_Report_{from_date}_to_{to_date}.csv'
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
@@ -756,7 +887,7 @@ def generate_report(request):
     if 'tasks' in include:
         writer.writerow(['==== TASKS ===='])
         writer.writerow([
-            'Title', 'Description', 'Status', 'Start Date', 'Due Date', 'Linked Goal', 'Linked Habit', 'Created At'
+            'Title', 'Description', 'Status', 'Start Date', 'Due Date', 'Linked Goal', 'Created At'
         ])
         tasks = Task.objects.filter(
             user=request.user, created_at__date__gte=from_date, created_at__date__lte=to_date
@@ -769,7 +900,6 @@ def generate_report(request):
                 task.start_date or '',
                 task.due_date or '',
                 task.goal.title if task.goal else '',
-                task.habit.habit_name if task.habit else '',
                 task.created_at.strftime('%Y-%m-%d')
             ])
         writer.writerow([])
@@ -799,14 +929,12 @@ def generate_report(request):
         )
         for goal in goals:
             total = Task.objects.filter(goal=goal).count()
-            completed = Task.objects.filter(goal=goal, status='Completed').count()
-            progress = (completed / total * 100) if total > 0 else 0
             habits_linked = Habit.objects.filter(goal=goal).count()
             writer.writerow([
                 goal.title,
                 goal.description or '',
                 goal.status,
-                f'{progress:.0f}%',
+                f'{goal.progress_percentage}%',
                 total,
                 habits_linked,
                 goal.created_at.strftime('%Y-%m-%d')
@@ -911,6 +1039,14 @@ def toggle_user_status(request, user_id):
 
 @login_required
 @admin_required
+def admin_delete_user(request, user_id):
+    if request.method == 'POST':
+        user = get_object_or_404(User, id=user_id, is_superuser=False)
+        user.delete()
+    return redirect('admin_users')
+
+@login_required
+@admin_required
 def admin_activity(request):
     today = datetime.date.today()
     activity_data = []
@@ -1003,14 +1139,15 @@ def admin_leaderboard(request):
             h_count = hab_comps.count()
             if h_count > 0:
                 habitScore = sum(hc.completion_percentage for hc in hab_comps) / h_count
-                
+
+            # FIX 2: use due_date-matched tasks as denominator (not all tasks ever created)
             taskScore = 0
-            tasks = Task.objects.filter(user=user, created_at__date__lte=day)
-            t_total = tasks.count()
+            tasks_due = Task.objects.filter(user=user, due_date=day)
+            t_total = tasks_due.count()
             if t_total > 0:
-                t_completed = tasks.filter(status='Completed', created_at__date=day).count()
+                t_completed = tasks_due.filter(status='Completed').count()
                 taskScore = (t_completed / t_total) * 100
-                
+
             scores.append((habitScore + taskScore) / 2)
 
         avg_score = sum(scores) / len(scores) if scores else 0

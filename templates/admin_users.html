@@ -42,14 +42,18 @@
                         <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill" style="font-size: 0.85rem;">🔴 Inactive</span>
                         {% endif %}
                     </td>
-                    <td class="pe-4 py-3 text-end">
-                        <form method="post" action="{% url 'toggle_user_status' user.id %}">
+                    <td class="pe-4 py-3 text-end" style="display:flex; justify-content:flex-end; gap:8px;">
+                        <form method="post" action="{% url 'toggle_user_status' user.id %}" style="margin:0;">
                             {% csrf_token %}
                             {% if user.is_active %}
                             <button type="submit" class="btn btn-sm btn-outline-danger fw-semibold px-3">Disable</button>
                             {% else %}
                             <button type="submit" class="btn btn-sm btn-outline-success fw-semibold px-3">Enable</button>
                             {% endif %}
+                        </form>
+                        <form method="post" action="{% url 'admin_delete_user' user.id %}" style="margin:0;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger fw-semibold px-3" onclick="return confirm('Are you sure you want to permanently delete {{ user.username|escapejs }} and all their data? This cannot be undone.');">Delete</button>
                         </form>
                     </td>
                 </tr>

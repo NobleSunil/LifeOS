@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (trackingModeReadonlyNote) trackingModeReadonlyNote.style.display = 'block';
             
-            if (habitForm) habitForm.action = `/habits/edit/${btn.getAttribute('data-id')}/`;
+            if (habitForm) habitForm.action = `/habits/${btn.getAttribute('data-id')}/edit/`;
             if (habitModal) habitModal.style.display = 'block';
         });
     });

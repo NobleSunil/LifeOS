@@ -95,7 +95,7 @@
             
             <!-- Actions -->
             <div style="display:flex; justify-content:flex-end; gap: 10px; align-items:center;">
-                <button class="btn btn-sm btn-secondary edit-goal-btn" data-id="{{ goal.id }}" data-title="{{ goal.title|escapejs }}" data-desc="{{ goal.description|escapejs }}" data-status="{{ goal.status }}">Edit</button>
+                <button class="btn btn-sm btn-secondary edit-goal-btn" data-id="{{ goal.id }}" data-title="{{ goal.title|escapejs }}" data-desc="{{ goal.description|escapejs }}" data-status="{{ goal.status }}" data-type="{{ goal.goal_type|default:'task_based' }}" data-target="{{ goal.target_days|default:'' }}">Edit</button>
                 <form action="{% url 'delete_goal' goal.id %}" method="post" style="margin:0;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this goal? All linked tasks and habits will be unlinked.');">Delete</button>
@@ -127,7 +127,7 @@
     <div class="fab-modal-content" style="width: 450px;">
         <span id="closeGoalModal" class="close-modal">&times;</span>
         <h3 id="goalModalTitle" style="margin-bottom: 1.5rem;">New Goal</h3>
-        <form id="goalForm" method="post" action="{% url 'goals_list' %}">
+        <form id="goalForm" method="post" action="{% url 'create_goal' %}">
             {% csrf_token %}
             <div style="margin-bottom: 15px;">
                 <label style="display:block; margin-bottom:8px; font-weight:600;">Title</label>
@@ -136,6 +136,31 @@
             <div style="margin-bottom: 15px;">
                 <label style="display:block; margin-bottom:8px; font-weight:600;">Description (optional)</label>
                 <textarea name="description" id="goalDescInput" rows="4" class="form-control" style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:1rem; font-family:inherit;"></textarea>
+            </div>
+            <div style="margin-bottom: 15px;" id="goalTypeGroup">
+                <label style="display:block; margin-bottom:8px; font-weight:600;">Goal Type</label>
+                <div style="padding:12px; border:1px solid var(--border-color); border-radius:8px;">
+                    <label style="display:flex; align-items:flex-start; gap:10px; padding:8px; cursor:pointer;" id="gt_task_label">
+                        <input type="radio" name="goal_type" id="type_task" value="task_based" checked style="margin-top:3px; accent-color:var(--primary-color);">
+                        <div>
+                            <strong>☑️ Task Based</strong>
+                            <div style="color:var(--text-secondary); font-size:0.85rem; margin-top:2px;">Check off tasks step-by-step</div>
+                        </div>
+                    </label>
+                    <label style="display:flex; align-items:flex-start; gap:10px; padding:8px; cursor:pointer;" id="gt_habit_label">
+                        <input type="radio" name="goal_type" id="type_habit" value="habit_based" style="margin-top:3px; accent-color:var(--primary-color);">
+                        <div>
+                            <strong>🔁 Habit Based</strong>
+                            <div style="color:var(--text-secondary); font-size:0.85rem; margin-top:2px;">Complete habits a set number of times</div>
+                        </div>
+                    </label>
+                </div>
+                <p id="goalTypeReadonlyNote" style="display:none; font-size:0.85rem; color:var(--text-secondary); margin-top:8px; font-style:italic;">⚠️ Goal type cannot be changed after creation.</p>
+            </div>
+            <div style="margin-bottom: 15px; display:none;" id="targetDaysGroup">
+                <label style="display:block; margin-bottom:8px; font-weight:600;">Target Days <span style="color:var(--danger-color);">*</span></label>
+                <input type="number" name="target_days" id="targetDaysInput" min="1" placeholder="e.g. 30" class="form-control" style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:1rem;">
+                <p style="font-size:0.85rem; color:var(--text-secondary); margin-top:5px;">How many days of habit completion to reach 100%?</p>
             </div>
             <div style="margin-bottom: 25px;" id="statusGroup">
                 <label style="display:block; margin-bottom:8px; font-weight:600;">Status</label>
@@ -164,5 +189,5 @@
     </div>
 </div>
 
-<script src="{% static 'js/goals.js' %}?v={{ request.timestamp|default:'1.1' }}"></script>
+<script src="{% static 'js/goals.js' %}?v={{ request.timestamp|default:'1.5' }}"></script>
 {% endblock %}

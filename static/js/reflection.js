@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 readOnlyChallenges.innerText = data.challenges || '—';
                 readOnlyTomorrow.innerText = data.tomorrow || '—';
                 
-                deleteReflectionForm.action = `/reflections/delete/${data.id}/`;
+                deleteReflectionForm.action = `/reflections/${data.id}/delete/`;
             }
         });
     });
@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tomorrowInput.value = data.tomorrow || '';
             
             document.getElementById('saveReflectionBtn').innerText = 'Save Changes';
-            reflectionForm.action = `/reflections/edit/${currentPastId}/`;
+            reflectionForm.action = `/reflections/${currentPastId}/edit/`;
         });
     }
 

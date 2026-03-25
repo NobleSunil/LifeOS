@@ -11,7 +11,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v={{ request.timestamp|default:'1.1' }}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2">
 </head>
 
 <body>
@@ -41,10 +41,10 @@
                     {% else %}
                     <li><a href="{% url 'dashboard' %}">🏠 Dashboard</a></li>
                     <li><a href="{% url 'goals_list' %}">🎯 Goals</a></li>
+                    <li><a href="{% url 'habits_list' %}">💪 Habits</a></li>
                     <li><a href="{% url 'tasks_list' %}">✅ Tasks {% if overdue_count > 0 %}<span class="badge"
                                 style="background-color: var(--danger-color); color: white; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.75rem; margin-left: 5px;">{{
                                 overdue_count }}</span>{% endif %}</a></li>
-                    <li><a href="{% url 'habits_list' %}">💪 Habits</a></li>
                     <li><a href="{% url 'reflections_list' %}">📓 Reflection</a></li>
                     {% endif %}
 
@@ -125,7 +125,7 @@
     </div>
     {% endif %}
 
-    <script src="{% static 'js/main.js' %}?v=1.1"></script>
+    <script src="{% static 'js/main.js' %}?v=1.5"></script>
 
     <!-- Global delete confirmation handler -->
     <script>

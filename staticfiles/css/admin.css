@@ -1,0 +1,440 @@
+/* LifeOS Admin Panel — Styled to match user-facing design */
+/* Fonts: Outfit (body) + Playfair Display (headings), matching style.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap');
+
+:root {
+    /* === Palette matching style.css exactly === */
+    --bg-color: #FDFBF7;
+    --text-primary: #2C3539;
+    --text-secondary: #71717A;
+    --primary-color: #1E3A5F;
+    --primary-hover: #152A47;
+    --success-color: #4A6741;
+    --danger-color: #C24A4A;
+    --warning-color: #D4A373;
+    --card-bg: #FFFFFF;
+    --border-color: #EAE6DF;
+    --font-family: 'Outfit', sans-serif;
+    --font-heading: 'Playfair Display', serif;
+    --shadow-sm: 0 4px 14px 0 rgba(0, 0, 0, 0.03);
+    --shadow-md: 0 8px 24px -2px rgba(0, 0, 0, 0.05);
+
+    /* Admin specific layout */
+    --navbar-height: 68px;
+    --sidebar-width: 270px;
+    --accent-color: #1E3A5F; /* same as primary */
+}
+
+/* ==================== RESET & BASE ==================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--bg-color) !important;
+    color: var(--text-primary);
+    overflow-x: hidden;
+    line-height: 1.6;
+}
+
+html {
+    background-color: var(--bg-color);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+a { text-decoration: none; }
+
+/* ==================== NAVBAR ==================== */
+.admin-navbar {
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    height: var(--navbar-height);
+    z-index: 1040;
+    box-shadow: var(--shadow-sm);
+}
+
+.admin-navbar .navbar-brand {
+    font-family: var(--font-heading);
+    color: var(--primary-color) !important;
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.admin-navbar .nav-link {
+    font-family: var(--font-family);
+    color: var(--text-secondary) !important;
+    font-weight: 500;
+}
+
+.admin-navbar .nav-link:hover {
+    color: var(--primary-color) !important;
+}
+
+/* Bootstrap dropdown override */
+.admin-navbar .dropdown-menu {
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    box-shadow: var(--shadow-md);
+    background-color: var(--card-bg);
+}
+
+.admin-navbar .dropdown-item {
+    font-family: var(--font-family);
+    color: var(--text-secondary);
+    font-weight: 500;
+    padding: 0.65rem 1.25rem;
+    transition: background-color 0.2s;
+}
+
+.admin-navbar .dropdown-item:hover {
+    background-color: #f1f5f9;
+    color: var(--primary-color);
+}
+
+/* ==================== SIDEBAR ==================== */
+.admin-sidebar {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: var(--sidebar-width);
+    height: 100vh;
+    background: var(--card-bg);
+    border-right: 1px solid var(--border-color);
+    transition: left 0.3s ease-in-out;
+    z-index: 1050;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-md);
+}
+
+.admin-sidebar.open { left: 0; }
+
+.admin-sidebar .sidebar-header {
+    padding: 1.5rem 1.5rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.admin-sidebar .sidebar-header h5 {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.admin-sidebar .sidebar-header button {
+    color: var(--text-secondary) !important;
+    font-size: 1.2rem;
+}
+
+.admin-sidebar .sidebar-header button:hover {
+    color: var(--primary-color) !important;
+}
+
+.sidebar-menu {
+    padding: 0.75rem 1rem;
+    flex: 1;
+}
+
+.menu-item {
+    display: block;
+    padding: 0.75rem 1rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: 0.5rem;
+    margin-bottom: 4px;
+    font-family: var(--font-family);
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.menu-item:hover {
+    background-color: #f1f5f9;
+    color: var(--primary-color);
+}
+
+.menu-item.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.menu-item.text-danger {
+    color: var(--danger-color) !important;
+}
+.menu-item.text-danger:hover {
+    background-color: #fff1f2;
+    color: var(--danger-color) !important;
+}
+
+/* ==================== SIDEBAR OVERLAY ==================== */
+.admin-sidebar-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(44, 53, 57, 0.45);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1045;
+}
+
+.admin-sidebar-overlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ==================== MAIN CONTENT ==================== */
+.admin-main-content {
+    margin-top: var(--navbar-height);
+    min-height: calc(100vh - var(--navbar-height));
+    background-color: var(--bg-color);
+}
+
+.admin-main-content .container {
+    max-width: 1200px;
+}
+
+/* ==================== PAGE HEADERS ==================== */
+.admin-page-title {
+    font-family: var(--font-heading);
+    color: var(--primary-color);
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.admin-page-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+/* ==================== STAT CARDS ==================== */
+.stat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.stat-card-title {
+    color: var(--text-secondary);
+    font-family: var(--font-family);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.75rem;
+}
+
+.stat-card-value {
+    font-family: var(--font-heading);
+    color: var(--primary-color);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1;
+}
+
+/* ==================== GENERAL CARDS ==================== */
+.admin-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: box-shadow 0.2s ease;
+}
+
+.admin-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.admin-card-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--card-bg);
+}
+
+.admin-card-header h5,
+.admin-card-header h6 {
+    font-family: var(--font-heading);
+    color: var(--primary-color);
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.admin-card-body {
+    padding: 1.5rem;
+}
+
+/* Bootstrap card overrides */
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.card-header {
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    font-family: var(--font-heading);
+    color: var(--primary-color);
+}
+
+/* ==================== TABLES ==================== */
+.table {
+    font-family: var(--font-family);
+    color: var(--text-primary);
+}
+
+.table thead th {
+    font-family: var(--font-family);
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    background-color: #f8f7f4;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.85rem 1rem;
+}
+
+.table tbody td {
+    padding: 0.85rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f7f4;
+}
+
+/* ==================== BADGES ==================== */
+.badge {
+    font-family: var(--font-family);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    padding: 0.3em 0.6em;
+    border-radius: 4px;
+}
+
+.badge.bg-success { background-color: var(--success-color) !important; }
+.badge.bg-danger  { background-color: var(--danger-color) !important; }
+.badge.bg-warning { background-color: var(--warning-color) !important; color: white !important; }
+.badge.bg-primary { background-color: var(--primary-color) !important; }
+
+/* ==================== BUTTONS ==================== */
+.btn {
+    font-family: var(--font-family);
+    font-weight: 500;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    border-color: var(--primary-hover);
+    color: white;
+}
+
+.btn-success {
+    background-color: var(--success-color);
+    border-color: var(--success-color);
+}
+.btn-danger {
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* ==================== FORMS ==================== */
+.form-control, .form-select {
+    font-family: var(--font-family);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    color: var(--text-primary);
+    background-color: var(--card-bg);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1);
+    outline: none;
+}
+
+/* ==================== SIDEBAR TOGGLE BUTTON IN NAVBAR ==================== */
+#adminSidebarToggle {
+    color: var(--text-secondary) !important;
+    font-size: 1.4rem;
+}
+
+#adminSidebarToggle:hover {
+    color: var(--primary-color) !important;
+}
+
+/* ==================== CHART CONTAINERS ==================== */
+.chart-container {
+    position: relative;
+}
+
+/* ==================== EMPTY STATE ==================== */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-secondary);
+}
+
+.empty-state p {
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* ==================== LEADERBOARD ==================== */
+.leaderboard-rank {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    width: 40px;
+    text-align: center;
+}
+
+/* ==================== UTILITIES ==================== */
+.text-primary-custom { color: var(--primary-color) !important; }
+.text-muted-custom   { color: var(--text-secondary) !important; }
+.bg-card             { background-color: var(--card-bg) !important; }
+.border-custom       { border-color: var(--border-color) !important; }

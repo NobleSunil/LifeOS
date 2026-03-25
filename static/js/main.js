@@ -56,3 +56,60 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// Appended UI Expand Logic
+
+function toggleGoal(id) {
+    const el = document.getElementById(`expand-${id}`);
+    const toggle = document.getElementById(`toggle-${id}`);
+    if(el && toggle) {
+        if(el.style.display === 'none' || el.style.display === '') {
+            el.style.display = 'block';
+            toggle.style.transform = 'rotate(90deg)';
+        } else {
+            el.style.display = 'none';
+            toggle.style.transform = 'rotate(0deg)';
+        }
+    }
+}
+
+function toggleHabit(id) {
+    const el = document.getElementById(`expand-${id}`);
+    const toggle = document.getElementById(`toggle-${id}`);
+    if(el && toggle) {
+        if(el.style.display === 'none' || el.style.display === '') {
+            el.style.display = 'block';
+            toggle.style.transform = 'rotate(90deg)';
+        } else {
+            el.style.display = 'none';
+            toggle.style.transform = 'rotate(0deg)';
+        }
+    }
+}
+
+function updateHabitVal(id, val) {
+    const el = document.getElementById(`hval-${id}`);
+    if(el) el.innerText = val + '%';
+}
+
+function updateTaskVal(id, val) {
+    const el = document.getElementById(`tval-${id}`);
+    if(el) el.innerText = val + '%';
+}
+
+function toggleCompleted() {
+    const list = document.getElementById('completedList');
+    const icon = document.getElementById('completedIcon');
+    const label = document.getElementById('completedTextLabel');
+    if(list && icon && label) {
+        if (list.style.display === 'none') {
+            list.style.display = 'flex';
+            icon.style.transform = 'rotate(90deg)';
+            label.innerText = 'Hide';
+        } else {
+            list.style.display = 'none';
+            icon.style.transform = 'rotate(0deg)';
+            label.innerText = 'Show';
+        }
+    }
+}

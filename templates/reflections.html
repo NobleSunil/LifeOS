@@ -104,16 +104,19 @@
             
             <div id="formErrorMsg" style="color:var(--danger-color); font-weight:600; margin-bottom:15px; display:none;">At least one field must be filled!</div>
             
-            <div style="display:flex; justify-content:center; gap:15px; margin-top:2rem; flex-wrap:wrap;">
+            <div style="display:flex; justify-content:center; gap:15px; margin-top:2rem; flex-wrap:wrap;" id="formActionWrapper">
                 <button type="submit" id="saveReflectionBtn" class="btn btn-primary" style="padding:0.75rem 3rem; font-size:1.1rem; font-weight:600;">Save Reflection</button>
-                {% if today_reflection_id %}
-                <form method="post" action="{% url 'delete_reflection' today_reflection_id %}" style="margin:0;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-outline-danger" style="padding:0.75rem 2rem; font-size:1.1rem; font-weight:600;" onclick="return confirm('Cancel and delete today\'s reflection?');">🗑️ Cancel Today</button>
-                </form>
-                {% endif %}
             </div>
         </form>
+        
+        {% if today_reflection_id %}
+        <div style="display:flex; justify-content:center; margin-top: 15px;">
+            <form method="post" action="{% url 'delete_reflection' today_reflection_id %}" style="margin:0;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger" style="padding:0.75rem 2rem; font-size:1.1rem; font-weight:600;" onclick="return confirm('Cancel and delete today\'s reflection?');">🗑️ Cancel Today</button>
+            </form>
+        </div>
+        {% endif %}
     </div>
 
     <!-- Past Day (Read Only) Mode -->
@@ -151,6 +154,6 @@
     window.reflectionsData = {{ reflections_json|safe }};
     window.todayDateStr = "{{ today_str }}";
 </script>
-<script src="{% static 'js/reflection.js' %}?v={{ request.timestamp|default:'1.1' }}"></script>
+<script src="{% static 'js/reflection.js' %}?v={{ request.timestamp|default:'1.6' }}"></script>
 
 {% endblock %}

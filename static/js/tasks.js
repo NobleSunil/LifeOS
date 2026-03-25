@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 1. Filter Logic ---
     const filterTabs = document.querySelectorAll('.filter-tab');
     const goalSelect = document.getElementById('filterGoalSelect');
-    const habitSelect = document.getElementById('filterHabitSelect');
     
     const taskCards = document.querySelectorAll('.task-card');
     const sections = document.querySelectorAll('.task-section');
@@ -29,9 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
             } 
             else if (filterType === 'Goal') {
                 show = card.getAttribute('data-goal-id') === filterValue;
-            }
-            else if (filterType === 'Habit') {
-                show = card.getAttribute('data-habit-id') === filterValue;
             }
 
             card.style.display = show ? 'flex' : 'none';
@@ -81,7 +77,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Reset Selects
             if(goalSelect) goalSelect.value = '';
-            if(habitSelect) habitSelect.value = '';
 
             updateVisibility('Tab', tab.getAttribute('data-filter'));
         });
@@ -96,22 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 t.style.fontWeight = '500';
                 t.style.color = 'var(--text-secondary)';
             });
-            if(habitSelect) habitSelect.value = '';
             updateVisibility('Goal', e.target.value);
-        });
-    }
-
-    if(habitSelect) {
-        habitSelect.addEventListener('change', (e) => {
-            if(e.target.value === '') return;
-            filterTabs.forEach(t => {
-                t.classList.remove('active');
-                t.style.borderBottom = 'none';
-                t.style.fontWeight = '500';
-                t.style.color = 'var(--text-secondary)';
-            });
-            if(goalSelect) goalSelect.value = '';
-            updateVisibility('Habit', e.target.value);
         });
     }
 
@@ -150,7 +130,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('taskStartInput').value = '';
         document.getElementById('taskDueInput').value = '';
         document.getElementById('taskGoalInput').value = '';
-        document.getElementById('taskHabitInput').value = '';
         document.getElementById('taskStatusInput').value = 'Pending';
         // Reset task type to simple
         const simpleRadio = document.getElementById('type_simple');
@@ -184,7 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('taskStartInput').value = btn.getAttribute('data-start');
             document.getElementById('taskDueInput').value = btn.getAttribute('data-due');
             document.getElementById('taskGoalInput').value = btn.getAttribute('data-goal');
-            document.getElementById('taskHabitInput').value = btn.getAttribute('data-habit');
             document.getElementById('taskStatusInput').value = btn.getAttribute('data-status');
 
             // Set task_type radio and lock it (cannot change after creation)
@@ -194,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 r.disabled = true;  // lock on edit
             });
             
-            taskForm.action = `/tasks/edit/${btn.getAttribute('data-id')}/`;
+            taskForm.action = `/tasks/${btn.getAttribute('data-id')}/edit/`;
             taskModal.style.display = 'block';
         });
     });

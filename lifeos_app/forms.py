@@ -45,48 +45,171 @@ class UserRegistrationForm(forms.ModelForm):
         return cleaned_data
 
 class GoalForm(forms.ModelForm):
+
+    GOAL_TYPE_CHOICES = [
+        ('task_based', 'Task Based'),
+        ('habit_based', 'Habit Based'),
+    ]
+
+    goal_type = forms.ChoiceField(
+        choices=GOAL_TYPE_CHOICES,
+        widget=forms.RadioSelect,
+        initial='task_based',
+        required=True
+    )
+
+    target_days = forms.IntegerField(
+        required=False,
+        min_value=1,
+        widget=forms.NumberInput(
+            attrs={
+                'placeholder': 'e.g. 30',
+                'min': '1'
+            }
+        )
+    )
+
     class Meta:
         model = Goal
-        fields = ['title', 'description', 'status']
+        fields = [
+            'title',
+            'description',
+            'goal_type',
+            'target_days'
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Lock goal_type after creation
+        if self.instance and self.instance.pk:
+            self.fields['goal_type'].disabled = True
+            self.fields['target_days'].disabled = True
+
+    def clean(self):
+        cleaned_data = super().clean()
+        goal_type = cleaned_data.get('goal_type')
+        target_days = cleaned_data.get('target_days')
+
+        # Habit Based goals MUST have target_days
+        if goal_type == 'habit_based' and not target_days:
+            self.add_error(
+                'target_days',
+                'Please set a target number of days '
+                'for your habit based goal.'
+            )
+
+        # Task Based goals should NOT have target_days
+        if goal_type == 'task_based':
+            cleaned_data['target_days'] = None
+
+        return cleaned_data
 
 class HabitForm(forms.ModelForm):
+
+    HABIT_TYPE_CHOICES = [
+        ('checkbox', 'Checkbox — Did I do it or not?'),
+        ('slider', 'Slider — How much did I do?'),
+    ]
+
+    habit_type = forms.ChoiceField(
+        choices=HABIT_TYPE_CHOICES,
+        widget=forms.RadioSelect,
+        initial='checkbox',
+        required=True
+    )
+
     class Meta:
         model = Habit
-        fields = ['habit_name', 'goal', 'tracking_mode']
-        widgets = {
-            'tracking_mode': forms.RadioSelect,
-        }
+        fields = [
+            'habit_name',
+            'habit_type',
+            'goal'
+        ]
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-        # tracking_mode cannot be changed after creation
+
+        # Lock habit_type after creation
         if self.instance and self.instance.pk:
-            self.fields['tracking_mode'].disabled = True
+            self.fields['habit_type'].disabled = True
+
+        # Only show Habit Based Goals
+        # in the goal dropdown
+        if self.user:
+            self.fields['goal'].queryset = Goal.objects.filter(
+                user=self.user,
+                goal_type='habit_based',
+                status='Active'
+            )
+        self.fields['goal'].required = False
+        self.fields['goal'].empty_label = '── No Goal'
 
 class TaskForm(forms.ModelForm):
+
+    TASK_TYPE_CHOICES = [
+        ('simple', 'Simple — Just mark complete when done'),
+        ('trackable', 'Trackable — Track progress % along the way'),
+    ]
+
+    task_type = forms.ChoiceField(
+        choices=TASK_TYPE_CHOICES,
+        widget=forms.RadioSelect,
+        initial='simple',
+        required=True
+    )
+
     class Meta:
         model = Task
-        fields = ['title', 'description', 'goal', 'habit', 'start_date', 'due_date', 'status', 'task_type']
-        widgets = {
-            'start_date': forms.DateInput(attrs={'type': 'date'}),
-            'due_date': forms.DateInput(attrs={'type': 'date'}),
-            'task_type': forms.RadioSelect,
-        }
+        fields = [
+            'title',
+            'description',
+            'task_type',
+            'goal',
+            'start_date',
+            'due_date',
+            'status'
+        ]
+        # REMOVED: habit field completely removed
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-        # task_type cannot be changed after creation
+
+        # Lock task_type after creation
         if self.instance and self.instance.pk:
             self.fields['task_type'].disabled = True
+
+        # Only show Task Based Goals
+        # in the goal dropdown
+        if self.user:
+            self.fields['goal'].queryset = Goal.objects.filter(
+                user=self.user,
+                goal_type='task_based',
+                status='Active'
+            )
+        self.fields['goal'].required = False
+        self.fields['goal'].empty_label = '── No Goal'
+
+        # Date pickers
+        self.fields['start_date'].widget = forms.DateInput(
+            attrs={'type': 'date'}
+        )
+        self.fields['due_date'].widget = forms.DateInput(
+            attrs={'type': 'date'}
+        )
 
     def clean(self):
         cleaned_data = super().clean()
         start_date = cleaned_data.get('start_date')
         due_date = cleaned_data.get('due_date')
 
-        if start_date and due_date and start_date > due_date:
-            self.add_error('start_date', "Start date cannot be later than the due date.")
-            
+        if start_date and due_date:
+            if start_date > due_date:
+                self.add_error(
+                    'start_date',
+                    'Start date cannot be after due date.'
+                )
         return cleaned_data
 
 

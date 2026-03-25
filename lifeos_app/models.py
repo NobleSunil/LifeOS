@@ -19,62 +19,156 @@ class UserProfile(models.Model):
         return f"{self.user.username}'s Profile"
 
 class Goal(models.Model):
-    """
-    Model representing a user's goals.
-    Goals can be set by users to track their objectives, with status tracking.
-    """
-    STATUS_CHOICES = [
-        ('Active', 'Active'),  # Goal is currently being worked on
-        ('Completed', 'Completed'),  # Goal has been achieved
+
+    GOAL_TYPE_CHOICES = [
+        ('task_based', 'Task Based'),
+        ('habit_based', 'Habit Based'),
     ]
-    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Foreign key to User; goals are deleted if user is deleted
-    title = models.CharField(max_length=200)  # Required title of the goal (up to 200 characters)
-    description = models.TextField(blank=True, null=True)  # Optional detailed description of the goal
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Active')  # Status of the goal, defaults to 'Active'
-    created_at = models.DateTimeField(auto_now_add=True)  # Automatically set when goal is created
-    completed_at = models.DateTimeField(blank=True, null=True)  # Optional timestamp when goal was completed
 
-    def __str__(self):
-        # Returns a string representation showing goal title and associated user
-        return f"{self.title} - {self.user.username}"
+    STATUS_CHOICES = [
+        ('Active', 'Active'),
+        ('Completed', 'Completed'),
+    ]
 
-    @property
-    def total_tasks(self):
-        return self.tasks.count()
-        
-    @property
-    def completed_tasks(self):
-        return self.tasks.filter(status='Completed').count()
-        
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
+    title = models.CharField(max_length=200)
+    description = models.TextField(
+        blank=True,
+        null=True
+    )
+    goal_type = models.CharField(
+        max_length=20,
+        choices=GOAL_TYPE_CHOICES,
+        default='task_based'
+    )
+    target_days = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text='Only for Habit Based goals'
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='Active'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+    completed_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    # Goal type cannot change after creation
+    # Enforced in form
+
     @property
     def progress_percentage(self):
-        total = self.total_tasks
-        return int((self.completed_tasks / total) * 100) if total > 0 else 0
 
-class Habit(models.Model):
-    """
-    Model representing a user's habits.
-    Habits are recurring activities that users want to track.
-    """
-    TRACKING_MODE_CHOICES = [
-        ('manual_slider', 'Manual with Slider'),
-        ('manual_checkbox', 'Manual with Checkbox'),
-        ('task_driven', 'Task Driven'),
-    ]
+        # TASK BASED GOAL
+        if self.goal_type == 'task_based':
+            tasks = self.tasks.all()
+            if not tasks.exists():
+                return 0
+            total_possible = tasks.count() * 100
+            actual_score = 0
+            for task in tasks:
+                if task.status == 'Completed':
+                    actual_score += 100
+                elif task.task_type == 'trackable':
+                    actual_score += task.progress
+            return round(
+                (actual_score / total_possible) * 100
+            )
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Foreign key to User; habits are deleted if user is deleted
-    habit_name = models.CharField(max_length=200)  # Name of the habit (up to 200 characters)
-    goal = models.ForeignKey(Goal, on_delete=models.SET_NULL, null=True, blank=True, related_name='habits')
-    tracking_mode = models.CharField(
-        max_length=20,
-        choices=TRACKING_MODE_CHOICES,
-        default='manual_slider'
-    )  # Cannot be changed after creation
-    created_at = models.DateTimeField(auto_now_add=True)  # Automatically set when habit is created
+        # HABIT BASED GOAL
+        elif self.goal_type == 'habit_based':
+            habits = self.linked_habits.all()
+            if not habits.exists():
+                return 0
+            if not self.target_days:
+                return 0
+
+            from datetime import date
+            today = date.today()
+            habit_progresses = []
+
+            for habit in habits:
+                # count days this habit was logged
+                # since goal was created
+                if habit.habit_type == 'checkbox':
+                    # checkbox: count days = 100%
+                    days_done = HabitCompletion.objects.filter(
+                        habit=habit,
+                        date__gte=self.created_at.date(),
+                        date__lte=today,
+                        completion_percentage=100
+                    ).count()
+                else:
+                    # slider: count days > 0%
+                    days_done = HabitCompletion.objects.filter(
+                        habit=habit,
+                        date__gte=self.created_at.date(),
+                        date__lte=today,
+                        completion_percentage__gt=0
+                    ).count()
+
+                # cap at target days
+                days_done = min(
+                    days_done,
+                    self.target_days
+                )
+                habit_progress = round(
+                    (days_done / self.target_days) * 100
+                )
+                habit_progresses.append(habit_progress)
+
+            # average across all linked habits
+            return round(
+                sum(habit_progresses) / len(habit_progresses)
+            )
+
+        return 0
 
     def __str__(self):
-        # Returns a string representation showing habit name and associated user
-        return f"{self.habit_name} - {self.user.username}"
+        return self.title
+
+class Habit(models.Model):
+
+    HABIT_TYPE_CHOICES = [
+        ('checkbox', 'Checkbox'),
+        ('slider', 'Slider'),
+    ]
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
+    habit_name = models.CharField(max_length=200)
+    habit_type = models.CharField(
+        max_length=20,
+        choices=HABIT_TYPE_CHOICES,
+        default='checkbox'
+    )
+    goal = models.ForeignKey(
+        'Goal',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='linked_habits'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    # habit_type cannot change after creation
+    # Enforced in form
+
+    def __str__(self):
+        return self.habit_name
 
 class HabitCompletion(models.Model):
     """
@@ -94,40 +188,63 @@ class HabitCompletion(models.Model):
         return f"{self.habit.habit_name} on {self.date} - {self.completion_percentage}%"
 
 class Task(models.Model):
-    """
-    Model representing tasks that users need to complete.
-    Tasks have due dates and can be marked as pending or completed.
-    """
-    STATUS_CHOICES = [
-        ('Pending', 'Pending'),  # Task is not yet completed
-        ('Completed', 'Completed'),  # Task has been finished
-    ]
+
     TASK_TYPE_CHOICES = [
         ('simple', 'Simple'),
         ('trackable', 'Trackable'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Foreign key to User; tasks are deleted if user is deleted
-    title = models.CharField(max_length=200)  # Required title of the task (up to 200 characters)
-    description = models.TextField(blank=True, null=True)  # Optional detailed description of the task
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')  # Status of the task, defaults to 'Pending'
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Completed', 'Completed'),
+    ]
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
+    title = models.CharField(max_length=200)
+    description = models.TextField(
+        blank=True,
+        null=True
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='Pending'
+    )
     task_type = models.CharField(
-        max_length=10,
+        max_length=20,
         choices=TASK_TYPE_CHOICES,
         default='simple'
-    )  # Cannot be changed after creation
+    )
     progress = models.IntegerField(
-        default=0,
-        validators=[MinValueValidator(0), MaxValueValidator(100)]
-    )  # Only meaningful for trackable tasks
-    goal = models.ForeignKey(Goal, on_delete=models.SET_NULL, null=True, blank=True, related_name='tasks')  # Optional relation to Goal
-    habit = models.ForeignKey(Habit, on_delete=models.SET_NULL, null=True, blank=True, related_name='tasks')
-    start_date = models.DateField(blank=True, null=True)  # Optional start date for the task
-    due_date = models.DateField(blank=True, null=True)  # Optional due date for the task
-    created_at = models.DateTimeField(auto_now_add=True)  # Automatically set when task is created
+        default=0
+    )
+    goal = models.ForeignKey(
+        'Goal',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='tasks'
+    )
+    # REMOVED: habit FK completely removed
+    start_date = models.DateField(
+        null=True,
+        blank=True
+    )
+    due_date = models.DateField(
+        null=True,
+        blank=True
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    # task_type cannot change after creation
+    # Enforced in form
 
     def __str__(self):
-        # Returns the task title as its string representation
         return self.title
 
 class Reflection(models.Model):

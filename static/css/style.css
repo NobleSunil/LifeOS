@@ -1,22 +1,62 @@
 /* Classy, inviting, premium UI CSS design */
 
 :root {
-    --bg-color: #FDFBF7; /* Soft, warm off-white */
-    --text-primary: #2C3539; /* Deep, soft slate/charcoal */
-    --text-secondary: #71717A;
-    --primary-color: #1E3A5F; /* Elegant Navy Blue */
-    --primary-hover: #152A47;
-    --success-color: #4A6741; /* Muted Forest Green */
-    --success-hover: #374F2F;
-    --danger-color: #C24A4A; /* Softened elegant red */
-    --warning-color: #D4A373; /* Warm Sand / Caramel */
-    --card-bg: #FFFFFF;
-    --border-color: #EAE6DF;
+    /* Background */
+    --bg-primary: #F7F3ED;
+    --bg-secondary: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --bg-hover: #F0EBE3;
+
+    /* Typography */
+    --text-primary: #1C2340;
+    --text-secondary: #6B7280;
+    --text-muted: #9CA3AF;
+
+    /* Brand */
+    --brand-primary: #2D3A6B;
+    --brand-accent: #4F46E5;
+
+    /* Status Colors */
+    --color-success: #16A34A;
+    --color-warning: #D97706;
+    --color-danger: #DC2626;
+    --color-info: #2563EB;
+
+    /* Progress Colors */
+    --progress-low: #DC2626;
+    --progress-mid: #D97706;
+    --progress-high: #16A34A;
+
+    /* Borders */
+    --border-color: #E5DDD3;
+    --border-radius: 12px;
+    --border-radius-sm: 8px;
+    --border-radius-lg: 16px;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06),
+                 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.05),
+                 0 2px 4px rgba(0,0,0,0.04);
+    --shadow-hover: 0 8px 16px rgba(0,0,0,0.08),
+                    0 4px 8px rgba(0,0,0,0.04);
+
+    /* Spacing */
+    --section-gap: 2rem;
+    --card-padding: 1.25rem;
+
+    /* Legacy Map */
+    --bg-color: var(--bg-primary);
+    --primary-color: var(--brand-primary);
+    --primary-hover: #1e2a52;
+    --success-color: var(--color-success);
+    --success-hover: #15803d;
+    --danger-color: var(--color-danger);
+    --warning-color: var(--color-warning);
+    --card-bg: var(--bg-card);
     --sidebar-width: 260px;
     --font-family: 'Outfit', sans-serif;
     --font-heading: 'Playfair Display', serif;
-    --shadow-sm: 0 4px 14px 0 rgba(0, 0, 0, 0.03);
-    --shadow-md: 0 8px 24px -2px rgba(0, 0, 0, 0.05);
 }
 
 * {
@@ -673,4 +713,422 @@ h1, h2, h3, h4, h5, h6 {
 .btn-outline-secondary:hover {
     background: var(--border-color);
     color: var(--text-primary);
+}
+
+/* ==================== GLOBAL STYLES (NEW DESIGN SYSTEM) ==================== */
+
+/* ── Base ── */
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+/* ── Cards ── */
+.card,
+.lifeos-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s ease,
+                transform 0.2s ease;
+    padding: var(--card-padding);
+}
+
+.card:hover,
+.lifeos-card:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-1px);
+}
+
+/* ── Section Headers ── */
+.section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+}
+
+/* ── Progress Bars ── */
+.lifeos-progress {
+    height: 8px;
+    border-radius: 99px;
+    background: var(--border-color);
+    overflow: hidden;
+}
+
+.lifeos-progress-bar {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.4s ease;
+}
+
+.lifeos-progress-bar.low {
+    background: var(--progress-low);
+}
+
+.lifeos-progress-bar.mid {
+    background: var(--progress-mid);
+}
+
+.lifeos-progress-bar.high {
+    background: var(--progress-high);
+}
+
+/* ── Badges ── */
+.lifeos-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+
+.lifeos-badge.task-based {
+    background: #EEF2FF;
+    color: #4338CA;
+    border: 1px solid #C7D2FE;
+}
+
+.lifeos-badge.habit-based {
+    background: #F0FDF4;
+    color: #15803D;
+    border: 1px solid #BBF7D0;
+}
+
+.lifeos-badge.slider {
+    background: #FFF7ED;
+    color: #C2410C;
+    border: 1px solid #FED7AA;
+}
+
+.lifeos-badge.checkbox {
+    background: #F0F9FF;
+    color: #0369A1;
+    border: 1px solid #BAE6FD;
+}
+
+.lifeos-badge.goal-link {
+    background: #EEF2FF;
+    color: #4338CA;
+    border: 1px solid #C7D2FE;
+}
+
+.lifeos-badge.active {
+    background: #F0FDF4;
+    color: #15803D;
+    border: 1px solid #BBF7D0;
+}
+
+.lifeos-badge.completed {
+    background: #F3F4F6;
+    color: #6B7280;
+    border: 1px solid #E5E7EB;
+}
+
+/* ── Buttons ── */
+.btn-lifeos-primary {
+    background: var(--brand-primary);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    padding: 8px 18px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s,
+                transform 0.1s;
+}
+
+.btn-lifeos-primary:hover {
+    background: #1e2a52;
+    transform: translateY(-1px);
+    color: white;
+}
+
+.btn-lifeos-success {
+    background: var(--color-success);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    padding: 6px 14px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-lifeos-success:hover {
+    background: #15803d;
+    color: white;
+}
+
+.btn-lifeos-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    padding: 6px 14px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-lifeos-ghost:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: #C4B9AC;
+}
+
+.btn-lifeos-danger {
+    background: transparent;
+    color: var(--color-danger);
+    border: 1px solid #FECACA;
+    border-radius: var(--border-radius-sm);
+    padding: 6px 14px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-lifeos-danger:hover {
+    background: #FEF2F2;
+    border-color: var(--color-danger);
+}
+
+/* ── Left Border Status Indicators ── */
+.border-left-danger {
+    border-left: 3px solid var(--color-danger) !important;
+}
+
+.border-left-warning {
+    border-left: 3px solid var(--color-warning) !important;
+}
+
+.border-left-success {
+    border-left: 3px solid var(--color-success) !important;
+}
+
+.border-left-neutral {
+    border-left: 3px solid var(--border-color) !important;
+}
+
+/* ── Weekly Dots ── */
+.week-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin: 0 auto;
+}
+
+.week-dot.done {
+    background: #DCFCE7;
+    color: #15803D;
+}
+
+.week-dot.not-done {
+    background: #FEE2E2;
+    color: #DC2626;
+}
+
+.week-dot.high {
+    background: #DCFCE7;
+    color: #15803D;
+}
+
+.week-dot.mid {
+    background: #FEF3C7;
+    color: #D97706;
+}
+
+.week-dot.low {
+    background: #FEE2E2;
+    color: #DC2626;
+}
+
+.week-dot.empty {
+    background: #F3F4F6;
+    color: #9CA3AF;
+}
+
+/* ── Sliders ── */
+input[type='range'] {
+    -webkit-appearance: none;
+    height: 6px;
+    border-radius: 99px;
+    background: var(--border-color);
+    outline: none;
+    cursor: pointer;
+}
+
+input[type='range']::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--brand-primary);
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    transition: transform 0.15s;
+}
+
+input[type='range']::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+/* ── Expand Toggle ── */
+.expand-toggle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--bg-hover);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+}
+
+.expand-toggle:hover {
+    background: var(--border-color);
+    color: var(--text-primary);
+}
+
+.expand-toggle.open {
+    background: var(--brand-primary);
+    color: white;
+    border-color: var(--brand-primary);
+}
+
+/* ── Empty States ── */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+}
+
+.empty-state .empty-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    opacity: 0.5;
+}
+
+.empty-state p {
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+
+/* ── Stat Cards ── */
+.stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    padding: 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.stat-card:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+}
+
+.stat-card .stat-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.stat-card .stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--brand-primary);
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+.stat-card .stat-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.stat-card .stat-accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: var(--border-radius)
+                   var(--border-radius) 0 0;
+}
+
+.stat-card.tasks .stat-accent {
+    background: var(--color-info);
+}
+
+.stat-card.goals .stat-accent {
+    background: var(--brand-accent);
+}
+
+.stat-card.habits .stat-accent {
+    background: var(--color-success);
+}
+
+/* Tasks CSS Specificity */
+.tasks-section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin: 1.5rem 0 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tasks-section-header .section-count {
+    background: var(--bg-hover);
+    color: var(--text-secondary);
+    padding: 1px 8px;
+    border-radius: 99px;
+    font-size: 0.7rem;
 }

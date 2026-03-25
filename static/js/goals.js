@@ -93,6 +93,15 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('goalDescInput').value = '';
             document.getElementById('goalStatusInput').value = 'Active';
             document.getElementById('goalForm').action = baseActionUrl; // reset to base
+            
+            // Allow goal type selection 
+            document.getElementById('type_task').checked = true;
+            document.getElementById('targetDaysGroup').style.display = 'none';
+            document.getElementById('targetDaysInput').value = '';
+            document.getElementById('targetDaysInput').required = false;
+            document.getElementById('goalTypeReadonlyNote').style.display = 'none';
+            document.querySelectorAll('input[name="goal_type"]').forEach(r => r.disabled = false);
+
             goalModal.style.display = 'block';
         });
     }
@@ -111,13 +120,31 @@ document.addEventListener('DOMContentLoaded', () => {
             const title = btn.getAttribute('data-title');
             const desc = btn.getAttribute('data-desc');
             const status = btn.getAttribute('data-status');
+            const type = btn.getAttribute('data-type');
+            const target = btn.getAttribute('data-target');
             
             document.getElementById('goalModalTitle').innerText = 'Edit Goal';
             document.getElementById('goalTitleInput').value = title;
             document.getElementById('goalDescInput').value = desc;
             document.getElementById('goalStatusInput').value = status;
             
-            document.getElementById('goalForm').action = `/goals/edit/${id}/`;
+            if (type === 'habit_based') {
+                document.getElementById('type_habit').checked = true;
+                document.getElementById('targetDaysGroup').style.display = 'block';
+                document.getElementById('targetDaysInput').value = target || '';
+                document.getElementById('targetDaysInput').required = true;
+            } else {
+                document.getElementById('type_task').checked = true;
+                document.getElementById('targetDaysGroup').style.display = 'none';
+                document.getElementById('targetDaysInput').value = '';
+                document.getElementById('targetDaysInput').required = false;
+            }
+
+            // Readonly for edits
+            document.querySelectorAll('input[name="goal_type"]').forEach(r => r.disabled = true);
+            document.getElementById('goalTypeReadonlyNote').style.display = 'block';
+            
+            document.getElementById('goalForm').action = `/goals/${id}/edit/`;
             goalModal.style.display = 'block';
         });
     });
@@ -128,6 +155,20 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const autoModal = document.getElementById('autoCompleteModal');
         if(e.target === autoModal) autoModal.style.display = 'none';
+    });
+
+    // Toggle event listener for radio buttons
+    document.querySelectorAll('input[name="goal_type"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            if (e.target.value === 'habit_based') {
+                document.getElementById('targetDaysGroup').style.display = 'block';
+                document.getElementById('targetDaysInput').required = true;
+            } else {
+                document.getElementById('targetDaysGroup').style.display = 'none';
+                document.getElementById('targetDaysInput').required = false;
+                document.getElementById('targetDaysInput').value = '';
+            }
+        });
     });
 
     // --- 4. Auto-Complete Logic Check ---

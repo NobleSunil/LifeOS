@@ -41,58 +41,79 @@
             </div>
         </div>
         <div class="task-actions" style="display:flex; gap:10px; align-items:center; flex-shrink:0;">
-            {% if not is_completed %}
-            <form action="{% url 'complete_task' task.id %}" method="post" style="margin:0;">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-sm btn-success" style="padding: 0.4rem 0.8rem;">✓ Complete</button>
-            </form>
+            {% if task.task_type == 'simple' or not task.task_type %}
+                <!-- SIMPLE TASK -->
+                {% if not is_completed and task.status != 'Completed' %}
+                <form action="{% url 'complete_task' task.id %}" method="post" style="margin:0;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-success" style="padding: 0.4rem 0.8rem;">✓ Complete</button>
+                </form>
+                {% endif %}
+                <button class="btn btn-sm btn-secondary edit-task-btn" 
+                        data-id="{{ task.id }}" 
+                        data-title="{{ task.title|escapejs }}" 
+                        data-desc="{{ task.description|escapejs }}" 
+                        data-start="{{ task.start_date|date:'Y-m-d' }}" 
+                        data-due="{{ task.due_date|date:'Y-m-d' }}"
+                        data-goal="{{ task.goal.id|default:'' }}"
+                        data-status="{{ task.status }}"
+                        data-task-type="{{ task.task_type }}"
+                        style="padding: 0.4rem 0.8rem;">Edit</button>
+                <form action="{% url 'delete_task' task.id %}" method="post" style="margin:0;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-danger" style="padding: 0.4rem 0.8rem;" onclick="return confirm('Delete this task?');">🗑️ Delete</button>
+                </form>
+
+            {% elif task.task_type == 'trackable' %}
+                <!-- TRACKABLE TASK (Complete button hidden) -->
+                <button class="btn btn-sm btn-secondary edit-task-btn" 
+                        data-id="{{ task.id }}" 
+                        data-title="{{ task.title|escapejs }}" 
+                        data-desc="{{ task.description|escapejs }}" 
+                        data-start="{{ task.start_date|date:'Y-m-d' }}" 
+                        data-due="{{ task.due_date|date:'Y-m-d' }}"
+                        data-goal="{{ task.goal.id|default:'' }}"
+                        data-status="{{ task.status }}"
+                        data-task-type="{{ task.task_type }}"
+                        style="padding: 0.4rem 0.8rem;">Edit</button>
+                <form action="{% url 'delete_task' task.id %}" method="post" style="margin:0;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-danger" style="padding: 0.4rem 0.8rem;" onclick="return confirm('Delete this task?');">🗑️ Delete</button>
+                </form>
             {% endif %}
-            <button class="btn btn-sm btn-secondary edit-task-btn" 
-                    data-id="{{ task.id }}" 
-                    data-title="{{ task.title|escapejs }}" 
-                    data-desc="{{ task.description|escapejs }}" 
-                    data-start="{{ task.start_date|date:'Y-m-d' }}" 
-                    data-due="{{ task.due_date|date:'Y-m-d' }}"
-                    data-goal="{{ task.goal.id|default:'' }}"
-                    data-habit="{{ task.habit.id|default:'' }}"
-                    data-status="{{ task.status }}"
-                    data-task-type="{{ task.task_type }}"
-                    style="padding: 0.4rem 0.8rem;">Edit</button>
-            <form action="{% url 'delete_task' task.id %}" method="post" style="margin:0;">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-sm btn-danger" style="padding: 0.4rem 0.8rem;" onclick="return confirm('Delete this task?');">🗑️ Delete</button>
-            </form>
         </div>
     </div>
 
     <!-- Trackable progress section (only for trackable, non-completed tasks) -->
-    {% if task.task_type == 'trackable' and not is_completed %}
+    {% if task.task_type == 'trackable' and not is_completed and task.status != 'Completed' %}
     <div class="task-progress-section" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--border-color);">
         <form method="post" action="{% url 'save_task_progress' task.id %}">
             {% csrf_token %}
-            <div style="display:flex; align-items:center; gap:10px;">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom: 0.5rem;">
                 <span style="font-size:0.85rem; color:var(--text-secondary);">0%</span>
                 <input type="range"
-                       class="range-slider"
+                       class="range-slider form-range"
                        name="progress"
                        min="0" max="100"
-                       value="{{ task.progress }}"
-                       id="slider_{{ task.id }}"
-                       oninput="updateSliderValue('{{ task.id }}', this.value)"
+                       value="{{ task.progress|default:0 }}"
+                       id="tslider-{{ task.id }}"
+                       oninput="updateTaskVal('{{ task.id }}', this.value)"
                        style="flex-grow:1; cursor:pointer;">
                 <span style="font-size:0.85rem; color:var(--text-secondary);">100%</span>
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 0.5rem;">
-                <span id="val_{{ task.id }}" style="font-weight:700; color:var(--primary-color); font-size:1rem;">{{ task.progress }}%</span>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span id="tval-{{ task.id }}" style="font-weight:700; color:var(--primary-color); font-size:1rem;">{{ task.progress|default:0 }}%</span>
                 <button type="submit" class="btn btn-sm btn-outline-secondary" style="padding:0.3rem 0.8rem; font-size:0.9rem;">Save Progress</button>
             </div>
         </form>
+
+        <!-- 100% Prompt -->
         {% if task.progress == 100 %}
-        <div style="margin-top:0.75rem; background:#e8f5e9; border:1px solid var(--success-color); border-radius:6px; padding:0.6rem 1rem; font-size:0.9rem; color:#2e7d32;">
-            💡 You're at 100%!
-            <form action="{% url 'complete_task' task.id %}" method="post" style="display:inline; margin-left:8px;">
+        <div style="margin-top:0.75rem; background:#F0FDF4; border:1px solid #BBF7D0; border-radius:6px; padding:0.6rem 1rem; font-size:0.9rem; color:#15803D; display:flex; justify-content:space-between; align-items:center;">
+            <span>💡 You are at 100%! Ready to mark complete?</span>
+            <form action="{% url 'complete_task' task.id %}" method="post" style="margin:0;">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-sm btn-success" style="padding:0.25rem 0.6rem; font-size:0.85rem;">Mark as Complete</button>
+                <button type="submit" class="btn btn-sm btn-success" style="padding:0.25rem 0.6rem; font-size:0.85rem;">Mark Complete</button>
             </form>
         </div>
         {% endif %}
