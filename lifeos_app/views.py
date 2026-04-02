@@ -1084,11 +1084,13 @@ def admin_activity(request):
 
         activity_data.append({
             'date': day.strftime('%b %d'),
-            'score': tasks_completed + habits_logged
+            'score': tasks_completed + habits_logged,
+            'tasks': tasks_completed,
+            'habits': habits_logged
         })
 
     context = {
-        'activity_data_json': json.dumps(activity_data),
+        'activity_data_json': activity_data,
         'total_activity_period': sum(item['score'] for item in activity_data)
     }
     return render(request, 'admin_activity.html', context)

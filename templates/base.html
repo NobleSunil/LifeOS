@@ -11,7 +11,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=9">
 </head>
 
 <body>
@@ -43,7 +43,7 @@
                     <li><a href="{% url 'goals_list' %}">🎯 Goals</a></li>
                     <li><a href="{% url 'habits_list' %}">💪 Habits</a></li>
                     <li><a href="{% url 'tasks_list' %}">✅ Tasks {% if overdue_count > 0 %}<span class="badge"
-                                style="background-color: var(--danger-color); color: white; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.75rem; margin-left: 5px;">{{
+                                style="background-color: var(--color-danger); color: white; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.75rem; margin-left: 5px;">{{
                                 overdue_count }}</span>{% endif %}</a></li>
                     <li><a href="{% url 'reflections_list' %}">📓 Reflection</a></li>
                     {% endif %}
@@ -64,11 +64,10 @@
             <header class="top-nav">
                 <div class="top-nav-left">
                     <button id="sidebarToggle" class="nav-icon-btn" aria-label="Toggle Sidebar"
-                        style="font-size: 1.5rem; background:none; border:none; cursor:pointer; color:var(--text-primary);">☰</button>
+                        style="font-size: 1.5rem; background:none; border:none; cursor:pointer; color:var(--color-bg);">☰</button>
                 </div>
                 <div class="top-nav-center" style="flex-grow: 1; text-align: center;">
-                    <h2 style="margin: 0; font-family: 'Playfair Display', serif; color: var(--primary-color);">LifeOS
-                    </h2>
+                    <h2 style="margin: 0; font-family: 'Playfair Display', serif; color: var(--color-bg);">LifeOS</h2>
                 </div>
                 <div class="top-nav-right">
                     <div class="profile-menu-container">
@@ -118,7 +117,7 @@
                 <a href="{% url 'tasks_list' %}" class="btn btn-primary"
                     style="text-align:center; padding: 12px; font-weight: 500;">✅ Add Task</a>
                 <a href="{% url 'habits_list' %}" class="btn"
-                    style="background-color: var(--success-color); color: white; text-align:center; padding: 12px; font-weight: 500; border-radius: 8px; text-decoration:none;">💪
+                    style="background-color: var(--color-success); color: white; text-align:center; padding: 12px; font-weight: 500; border-radius: 8px; text-decoration:none;">💪
                     Log Habit</a>
             </div>
         </div>
@@ -129,16 +128,16 @@
     <div id="deleteConfirmModal"
         style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
         <div
-            style="background:#fff; border-radius:12px; padding:2rem; max-width:420px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.2); text-align:center;">
+            style="background:var(--color-surface); border-radius:12px; padding:2rem; max-width:420px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.2); text-align:center;">
             <div style="font-size:2.5rem; margin-bottom:1rem;">🗑️</div>
-            <h3 style="margin-bottom:0.75rem; color:#1C2340; font-size:1.2rem;">Confirm Delete</h3>
+            <h3 style="margin-bottom:0.75rem; color:var(--color-primary); font-size:1.2rem;">Confirm Delete</h3>
             <p id="deleteConfirmMessage"
-                style="color:#6B7280; margin-bottom:1.75rem; font-size:0.95rem; line-height:1.5;"></p>
+                style="color:var(--color-text-muted); margin-bottom:1.75rem; font-size:0.95rem; line-height:1.5;"></p>
             <div style="display:flex; gap:12px; justify-content:center;">
                 <button id="deleteCancelBtn"
-                    style="padding:0.6rem 1.5rem; border:1px solid #E5DDD3; border-radius:8px; background:#fff; color:#6B7280; font-weight:600; cursor:pointer; font-size:0.95rem;">Cancel</button>
+                    style="padding:0.6rem 1.5rem; border:1px solid var(--color-border); border-radius:8px; background:var(--color-surface); color:var(--color-text-muted); font-weight:600; cursor:pointer; font-size:0.95rem;">Cancel</button>
                 <button id="deleteConfirmBtn"
-                    style="padding:0.6rem 1.5rem; border:none; border-radius:8px; background:#DC2626; color:#fff; font-weight:600; cursor:pointer; font-size:0.95rem;">Delete</button>
+                    style="padding:0.6rem 1.5rem; border:none; border-radius:8px; background:var(--color-danger); color:var(--color-surface); font-weight:600; cursor:pointer; font-size:0.95rem;">Delete</button>
             </div>
         </div>
     </div>

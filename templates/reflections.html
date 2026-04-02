@@ -5,10 +5,10 @@
 <!-- Header -->
 <div class="dashboard-header" style="margin-bottom: 2rem; display:flex; justify-content:space-between; align-items:center;">
     <div>
-        <h1 style="color: var(--primary-color);">📓 Daily Reflection</h1>
+        <h1 style="color: var(--color-primary);">📓 Daily Reflection</h1>
     </div>
     {% if streak > 0 %}
-    <p style="font-weight:600; color:var(--text-secondary); margin:0;">📓 Current Streak: <span style="color:var(--danger-color);">🔥 {{ streak }} days</span></p>
+    <p style="font-weight:600; color:var(--text-secondary); margin:0;">📓 Current Streak: <span style="color:var(--color-danger);">🔥 {{ streak }} days</span></p>
     {% endif %}
 </div>
 
@@ -102,7 +102,7 @@
                 <textarea name="tomorrow" id="tomorrowInput" class="form-control" rows="3" placeholder="What will you focus on tomorrow?" style="width:100%; border-radius:6px; padding:12px; border:1px solid var(--border-color); font-size:1rem;"></textarea>
             </div>
             
-            <div id="formErrorMsg" style="color:var(--danger-color); font-weight:600; margin-bottom:15px; display:none;">At least one field must be filled!</div>
+            <div id="formErrorMsg" style="color:var(--color-danger); font-weight:600; margin-bottom:15px; display:none;">At least one field must be filled!</div>
             
             <div style="display:flex; justify-content:center; gap:15px; margin-top:2rem; flex-wrap:wrap;" id="formActionWrapper">
                 <button type="submit" id="saveReflectionBtn" class="btn btn-primary" style="padding:0.75rem 3rem; font-size:1.1rem; font-weight:600;">Save Reflection</button>
@@ -125,17 +125,17 @@
         
         <div style="margin-bottom: 1.5rem;">
             <label style="display:block; font-weight:600; margin-bottom: 10px; font-size:1.1rem;">🏆 Wins</label>
-            <div id="readOnlyWins" style="width:100%; border-radius:6px; padding:15px; border:1px solid var(--border-color); background:#f8fafc; font-size:1rem; min-height:80px; white-space: pre-wrap;"></div>
+            <div id="readOnlyWins" style="width:100%; border-radius:6px; padding:15px; border:1px solid var(--border-color); background:var(--color-surface); font-size:1rem; min-height:80px; white-space: pre-wrap;"></div>
         </div>
         
         <div style="margin-bottom: 1.5rem;">
             <label style="display:block; font-weight:600; margin-bottom: 10px; font-size:1.1rem;">⚡ Challenges</label>
-            <div id="readOnlyChallenges" style="width:100%; border-radius:6px; padding:15px; border:1px solid var(--border-color); background:#f8fafc; font-size:1rem; min-height:80px; white-space: pre-wrap;"></div>
+            <div id="readOnlyChallenges" style="width:100%; border-radius:6px; padding:15px; border:1px solid var(--border-color); background:var(--color-surface); font-size:1rem; min-height:80px; white-space: pre-wrap;"></div>
         </div>
         
         <div style="margin-bottom: 1.5rem;">
             <label style="display:block; font-weight:600; margin-bottom: 10px; font-size:1.1rem;">🎯 Tomorrow's Plan</label>
-            <div id="readOnlyTomorrow" style="width:100%; border-radius:6px; padding:15px; border:1px solid var(--border-color); background:#f8fafc; font-size:1rem; min-height:80px; white-space: pre-wrap;"></div>
+            <div id="readOnlyTomorrow" style="width:100%; border-radius:6px; padding:15px; border:1px solid var(--border-color); background:var(--color-surface); font-size:1rem; min-height:80px; white-space: pre-wrap;"></div>
         </div>
         
         <div style="display:flex; justify-content:center; gap: 15px; margin-top:2rem;">

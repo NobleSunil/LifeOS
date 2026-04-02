@@ -1,9 +1,9 @@
 {% extends 'admin_base.html' %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold" style="color: var(--primary-color);">👤 Age Analytics</h2>
+    <h2 class="fw-bold" style="color: var(--color-primary);">👤 Age Analytics</h2>
 </div>
-
+<div class="canvas-panel">
 <div class="row g-4 mb-5">
     <div class="col-lg-3 col-sm-6">
         <div class="stat-card">
@@ -49,8 +49,8 @@
         </ul>
         <style>
             .nav-tabs .nav-link { padding: 10px 20px; border-bottom: 3px solid transparent !important; color: var(--text-secondary); border-radius: 0; }
-            .nav-tabs .nav-link:hover { color: var(--primary-color) !important; }
-            .nav-tabs .nav-link.active { border-bottom: 3px solid var(--accent-color) !important; color: var(--primary-color) !important; }
+            .nav-tabs .nav-link:hover { color: var(--color-primary) !important; }
+            .nav-tabs .nav-link.active { border-bottom: 3px solid var(--accent-color) !important; color: var(--color-primary) !important; }
         </style>
     </div>
     
@@ -65,7 +65,7 @@
                         <span class="fw-bold text-truncate pe-2" style="width: 140px; font-size: 1.05rem;">{{ forloop.counter }}. {{ habit.habit_name }}</span>
                         <div class="flex-grow-1" style="font-family: monospace; letter-spacing: -1px; color: var(--accent-color); font-size: 1.1rem; overflow: hidden; white-space: nowrap;">
                             {% widthratio habit.count habits_15_20.0.count 12 as proportion %}
-                            {% for i in "123456789012"|make_list %}{% if forloop.counter <= proportion|add:"0" %}█{% else %}<span style="color:#cbd5e1;">░</span>{% endif %}{% endfor %}
+                            {% for i in "123456789012"|make_list %}{% if forloop.counter <= proportion|add:"0" %}█{% else %}<span style="color:var(--color-text-muted);">░</span>{% endif %}{% endfor %}
                         </div>
                         <span class="text-muted fw-semibold ps-2" style="min-width: 80px; text-align: right;">{{ habit.count }} users</span>
                     </li>
@@ -86,7 +86,7 @@
                         <span class="fw-bold text-truncate pe-2" style="width: 140px; font-size: 1.05rem;">{{ forloop.counter }}. {{ habit.habit_name }}</span>
                         <div class="flex-grow-1" style="font-family: monospace; letter-spacing: -1px; color: var(--accent-color); font-size: 1.1rem; overflow: hidden; white-space: nowrap;">
                             {% widthratio habit.count habits_21_25.0.count 12 as proportion %}
-                            {% for i in "123456789012"|make_list %}{% if forloop.counter <= proportion|add:"0" %}█{% else %}<span style="color:#cbd5e1;">░</span>{% endif %}{% endfor %}
+                            {% for i in "123456789012"|make_list %}{% if forloop.counter <= proportion|add:"0" %}█{% else %}<span style="color:var(--color-text-muted);">░</span>{% endif %}{% endfor %}
                         </div>
                         <span class="text-muted fw-semibold ps-2" style="min-width: 80px; text-align: right;">{{ habit.count }} users</span>
                     </li>
@@ -107,7 +107,7 @@
                         <span class="fw-bold text-truncate pe-2" style="width: 140px; font-size: 1.05rem;">{{ forloop.counter }}. {{ habit.habit_name }}</span>
                         <div class="flex-grow-1" style="font-family: monospace; letter-spacing: -1px; color: var(--accent-color); font-size: 1.1rem; overflow: hidden; white-space: nowrap;">
                             {% widthratio habit.count habits_26_30.0.count 12 as proportion %}
-                            {% for i in "123456789012"|make_list %}{% if forloop.counter <= proportion|add:"0" %}█{% else %}<span style="color:#cbd5e1;">░</span>{% endif %}{% endfor %}
+                            {% for i in "123456789012"|make_list %}{% if forloop.counter <= proportion|add:"0" %}█{% else %}<span style="color:var(--color-text-muted);">░</span>{% endif %}{% endfor %}
                         </div>
                         <span class="text-muted fw-semibold ps-2" style="min-width: 80px; text-align: right;">{{ habit.count }} users</span>
                     </li>
@@ -128,7 +128,7 @@
                         <span class="fw-bold text-truncate pe-2" style="width: 140px; font-size: 1.05rem;">{{ forloop.counter }}. {{ habit.habit_name }}</span>
                         <div class="flex-grow-1" style="font-family: monospace; letter-spacing: -1px; color: var(--accent-color); font-size: 1.1rem; overflow: hidden; white-space: nowrap;">
                             {% widthratio habit.count habits_30_plus.0.count 12 as proportion %}
-                            {% for i in "123456789012"|make_list %}{% if forloop.counter <= proportion|add:"0" %}█{% else %}<span style="color:#cbd5e1;">░</span>{% endif %}{% endfor %}
+                            {% for i in "123456789012"|make_list %}{% if forloop.counter <= proportion|add:"0" %}█{% else %}<span style="color:var(--color-text-muted);">░</span>{% endif %}{% endfor %}
                         </div>
                         <span class="text-muted fw-semibold ps-2" style="min-width: 80px; text-align: right;">{{ habit.count }} users</span>
                     </li>
@@ -140,5 +140,6 @@
         </div>
         
     </div>
+</div>
 </div>
 {% endblock %}

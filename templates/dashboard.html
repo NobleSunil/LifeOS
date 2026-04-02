@@ -4,10 +4,17 @@
 {% block content %}
 
 <!-- Section 1: Greeting -->
-<div class="dashboard-section mb-4" style="margin-bottom: 2.5rem;">
-    <h1 style="color: var(--primary-color);">{{ greeting_time }} {{ display_name }}!</h1>
-    <h4 style="color: var(--text-secondary); margin-bottom: 0.5rem; font-weight:500;">📅 {{ today_date|date:"l, F j, Y" }}</h4>
-    <p style="font-style: italic; color: var(--text-secondary); margin-top: 10px; font-size: 1.1rem;">"{{ daily_quote }}"</p>
+<div class="dashboard-section" style="margin-top: 1.5rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <!-- Left: Greeting -->
+    <div>
+        <h1 style="color: var(--color-primary); margin: 0;">{{ greeting_time }} {{ display_name }}!</h1>
+    </div>
+    
+    <!-- Right: Date and Quote -->
+    <div style="text-align: right;">
+        <h4 style="color: var(--text-secondary); margin: 0 0 0.25rem 0; font-weight:500;">📅 {{ today_date|date:"l, F j, Y" }}</h4>
+        <p style="font-style: italic; color: var(--text-secondary); margin: 0; font-size: 1.1rem;">"{{ daily_quote }}"</p>
+    </div>
 </div>
 
 <!-- Section 2: Quick Stats Strip (3 Cards) -->
@@ -37,38 +44,38 @@
             <h3 style="margin-bottom: 1.5rem;">Today's Tasks</h3>
             <div class="list-section">
                 {% for task in today_tasks %}
-                <div class="item-card {% if task.ui_status == 'overdue' %}border-danger{% elif task.ui_status == 'today' %}border-warning{% endif %}" style="padding: 1.25rem; border-radius: 0.5rem; border: 1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; background: #fff;">
+                <div class="item-card {% if task.ui_status == 'overdue' %}border-danger{% elif task.ui_status == 'today' %}border-warning{% endif %}" style="padding: 1.25rem; border-radius: 0.5rem; border: 1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; background: var(--color-bg);">
                     <div>
                         <h4 style="margin:0; font-size: 1.15rem;">{{ task.title }}</h4>
                         <div style="font-size: 0.85rem; margin-top: 10px; display:flex; gap: 8px; align-items:center; flex-wrap: wrap;">
                             {% if task.ui_status == 'overdue' %}
-                                <span style="color: var(--danger-color); font-weight:600;">⚠️ {{ task.date_label }}</span>
+                                <span style="color: var(--color-danger); font-weight:600;">⚠️ {{ task.date_label }}</span>
                             {% elif task.ui_status == 'today' %}
-                                <span style="color: var(--warning-color); font-weight:600;">🕒 {{ task.date_label }}</span>
+                                <span style="color: var(--color-warning); font-weight:600;">🕒 {{ task.date_label }}</span>
                             {% else %}
                                 <span style="color: var(--text-secondary);">📅 {{ task.date_label }}</span>
                             {% endif %}
                             
                             {% if task.goal %}
-                                <span style="background:var(--primary-color); color:white; padding: 3px 8px; border-radius:4px; font-size:0.75rem;">🎯 {{ task.goal.title }}</span>
+                                <span style="background:var(--color-primary); color:white; padding: 3px 8px; border-radius:4px; font-size:0.75rem;">🎯 {{ task.goal.title }}</span>
                             {% endif %}
                             
                             {% if task.habit %}
-                                <span style="background:var(--success-color); color:white; padding: 3px 8px; border-radius:4px; font-size:0.75rem;">💪 {{ task.habit.habit_name }}</span>
+                                <span style="background:var(--color-success); color:white; padding: 3px 8px; border-radius:4px; font-size:0.75rem;">💪 {{ task.habit.habit_name }}</span>
                             {% endif %}
                         </div>
                     </div>
                     <form action="{% url 'complete_task' task.id %}" method="post" style="margin:0;">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-sm btn-primary">✓ Complete</button>
+                        <button type="submit" class="btn btn-sm btn-success" style="padding: 0.4rem 0.8rem;">✓ Complete</button>
                     </form>
                 </div>
                 {% empty %}
-                <p style="color: var(--text-secondary); text-align:center; padding: 1.5rem 0; background: #f8fafc; border-radius: 0.5rem;">No tasks for today. Enjoy your day! 🎉</p>
+                <p style="color: var(--text-secondary); text-align:center; padding: 1.5rem 0; background: var(--color-bg); border-radius: 0.5rem;">No tasks for today. Enjoy your day! 🎉</p>
                 {% endfor %}
             </div>
             <div style="text-align: right; margin-top: 1.5rem;">
-                <a href="{% url 'tasks_list' %}" style="text-decoration:none; font-size:0.95rem; font-weight:600; color:var(--primary-color);">View All Tasks →</a>
+                <a href="{% url 'tasks_list' %}" style="text-decoration:none; font-size:0.95rem; font-weight:600; color:var(--color-primary);">View All Tasks →</a>
             </div>
         </div>
 
@@ -77,28 +84,28 @@
             <h3 style="margin-bottom: 1.5rem;">Today's Habits</h3>
             <div class="list-section">
                 {% for habit in today_habits %}
-                <div class="item-card" style="padding: 1.25rem; border-radius: 0.5rem; border: 1px solid var(--border-color); background: #fff; flex-direction:column; align-items:flex-start;">
+                <div class="item-card" style="padding: 1.25rem; border-radius: 0.5rem; border: 1px solid var(--border-color); background: var(--color-bg); flex-direction:column; align-items:flex-start;">
                     <div style="display:flex; justify-content:space-between; width:100%; align-items:center; margin-bottom: 12px;">
                         <div>
                             <h4 style="margin:0; display:inline-block; font-size: 1.15rem;">{{ habit.habit_name }}</h4>
                             <span style="margin-left:8px; font-size:0.85rem; color:var(--text-secondary); font-weight: 500;">🔥 {{ habit.streak }} day streak</span>
                         </div>
                         {% if habit.completion_today is None %}
-                            <a href="{% url 'habits_list' %}" class="btn btn-sm" style="background:var(--primary-color); color:white; padding: 0.35rem 0.75rem; border-radius: 6px;">Log Now</a>
+                            <a href="{% url 'habits_list' %}" class="btn btn-sm" style="background:var(--color-primary); color:white; padding: 0.35rem 0.75rem; border-radius: 6px;">Log Now</a>
                         {% endif %}
                     </div>
                     {% if habit.goal %}
-                        <span style="background:var(--primary-color); color:white; padding: 3px 8px; border-radius:4px; font-size:0.75rem; margin-bottom:12px; display:inline-block;">🎯 {{ habit.goal.title }}</span>
+                        <span style="background:var(--color-primary); color:white; padding: 3px 8px; border-radius:4px; font-size:0.75rem; margin-bottom:12px; display:inline-block;">🎯 {{ habit.goal.title }}</span>
                     {% endif %}
                     <div style="width: 100%; display:flex; align-items:center; gap: 15px;">
-                        <div style="flex-grow: 1; height: 10px; background: #f1f5f9; border-radius: 5px; overflow: hidden; border: 1px solid #e2e8f0;">
+                        <div style="flex-grow: 1; height: 10px; background: var(--color-surface-2); border-radius: 5px; overflow: hidden; border: 1px solid var(--color-border);">
                             <div style="height: 100%; width: {{ habit.completion_today|default:0 }}%; background-color: var(--{{ habit.progress_color }}-color); transition: width 0.5s ease;"></div>
                         </div>
                         <span style="font-size:0.9rem; font-weight:700; width:45px; text-align:right; color: var(--{{ habit.progress_color }}-color);">{{ habit.completion_today|default:0 }}%</span>
                     </div>
                 </div>
                 {% empty %}
-                <p style="color: var(--text-secondary); text-align:center; padding: 1.5rem 0; background: #f8fafc; border-radius: 0.5rem;">No habits yet. Build your first habit! 💪</p>
+                <p style="color: var(--text-secondary); text-align:center; padding: 1.5rem 0; background: var(--color-bg); border-radius: 0.5rem;">No habits yet. Build your first habit! 💪</p>
                 {% endfor %}
             </div>
         </div>
@@ -113,24 +120,24 @@
             <h3 style="margin-bottom: 1.5rem;">Active Goals</h3>
             <div class="list-section">
                 {% for goal in active_goals %}
-                <div class="item-card" style="padding: 1.25rem; border-radius: 0.5rem; border: 1px solid var(--border-color); background: #fff; flex-direction:column; align-items:flex-start;">
+                <div class="item-card" style="padding: 1.25rem; border-radius: 0.5rem; border: 1px solid var(--border-color); background: var(--color-bg); flex-direction:column; align-items:flex-start;">
                     <div style="display:flex; justify-content:space-between; width:100%; align-items:center; margin-bottom: 12px;">
                         <h4 style="margin:0; font-size: 1.15rem;">{{ goal.title }}</h4>
                         <span style="font-size:0.9rem; font-weight:600; color:var(--text-secondary);">{{ goal.completed_count }}/{{ goal.total_count }} tasks done</span>
                     </div>
                     <div style="width: 100%; display:flex; align-items:center; gap: 15px;">
-                        <div style="flex-grow: 1; height: 10px; background: #f1f5f9; border-radius: 5px; overflow: hidden; border: 1px solid #e2e8f0;">
+                        <div style="flex-grow: 1; height: 10px; background: var(--color-surface-2); border-radius: 5px; overflow: hidden; border: 1px solid var(--color-border);">
                             <div style="height: 100%; width: {{ goal.progress_pct|floatformat:0 }}%; background-color: var(--{{ goal.progress_color }}-color); transition: width 0.5s ease;"></div>
                         </div>
                         <span style="font-size:0.9rem; font-weight:700; width:45px; text-align:right; color: var(--{{ goal.progress_color }}-color);">{{ goal.progress_pct|floatformat:0 }}%</span>
                     </div>
                 </div>
                 {% empty %}
-                <p style="color: var(--text-secondary); text-align:center; padding: 1.5rem 0; background: #f8fafc; border-radius: 0.5rem;">No active goals. Create one to get started! 🎯</p>
+                <p style="color: var(--text-secondary); text-align:center; padding: 1.5rem 0; background: var(--color-bg); border-radius: 0.5rem;">No active goals. Create one to get started! 🎯</p>
                 {% endfor %}
             </div>
             <div style="text-align: right; margin-top: 1.5rem;">
-                <a href="{% url 'goals_list' %}" style="text-decoration:none; font-size:0.95rem; font-weight:600; color:var(--primary-color);">View All Goals →</a>
+                <a href="{% url 'goals_list' %}" style="text-decoration:none; font-size:0.95rem; font-weight:600; color:var(--color-primary);">View All Goals →</a>
             </div>
         </div>
 
@@ -161,7 +168,7 @@
                                 borderWidth: 3,
                                 fill: true,
                                 tension: 0.4,
-                                pointBackgroundColor: '#ffffff',
+                                pointBackgroundColor: '#F5EDD8',
                                 pointBorderColor: 'rgba(30, 58, 95, 1)',
                                 pointBorderWidth: 2,
                                 pointRadius: 4,
@@ -184,12 +191,12 @@
                                 y: {
                                     beginAtZero: true,
                                     max: 100,
-                                    grid: { color: '#EAE6DF', drawBorder: false },
-                                    ticks: { font: { family: "'Outfit', sans-serif" }, color: '#71717A' }
+                                    grid: { color: '#D4C9A8', drawBorder: false },
+                                    ticks: { font: { family: "'Outfit', sans-serif" }, color: '#7A6248' }
                                 },
                                 x: {
                                     grid: { display: false, drawBorder: false },
-                                    ticks: { font: { family: "'Outfit', sans-serif" }, color: '#71717A' }
+                                    ticks: { font: { family: "'Outfit', sans-serif" }, color: '#7A6248' }
                                 }
                             }
                         }
@@ -199,7 +206,7 @@
                     productivityChart.data.datasets.push({
                         label: 'Average',
                         data: Array(chartLabels.length).fill(avgScore),
-                        borderColor: '#71717A',
+                        borderColor: '#7A6248',
                         borderWidth: 2,
                         borderDash: [5, 5],
                         pointRadius: 0,
@@ -211,7 +218,7 @@
                 });
             </script>
             {% else %}
-            <p style="color: var(--text-secondary); text-align:center; padding: 2.5rem 0; background: #f8fafc; border-radius: 0.5rem; border: 1px dashed var(--border-color);">
+            <p style="color: var(--text-secondary); text-align:center; padding: 2.5rem 0; background: var(--color-bg); border-radius: 0.5rem; border: 1px dashed var(--border-color);">
                 No activity this week. Start logging to see your score! 📊
             </p>
             {% endif %}

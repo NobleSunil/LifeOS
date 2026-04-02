@@ -1,9 +1,9 @@
 {% extends 'admin_base.html' %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold" style="color: var(--primary-color);">📈 Platform Activity — Last 30 Days</h2>
+    <h2 class="fw-bold" style="color: var(--color-primary);">📈 Platform Activity — Last 30 Days</h2>
 </div>
-
+<div class="canvas-panel">
 <div class="card border-0 shadow-sm p-4" style="border-radius: 12px;">
     {% if total_activity_period == 0 %}
     <div class="text-center py-5 text-muted">
@@ -15,7 +15,7 @@
     </div>
     {% endif %}
 </div>
-
+</div>
 {{ activity_data_json|json_script:"activityData" }}
 {% endblock %}
 
@@ -30,49 +30,78 @@ document.addEventListener('DOMContentLoaded', () => {
     // Process data for Chart.js
     const labels = activityData.map(item => item.date);
     const dataPoints = activityData.map(item => item.score);
+    const tasksPoints = activityData.map(item => item.tasks);
+    const habitsPoints = activityData.map(item => item.habits);
 
     const ctx = document.getElementById('activityChart').getContext('2d');
     
-    // Gradient fill
     const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
-    gradient.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+    gradient.addColorStop(0, 'rgba(212, 168, 83, 0.4)');
+    gradient.addColorStop(1, 'rgba(212, 168, 83, 0.0)');
 
     new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
-            datasets: [{
-                label: 'Activity Score',
-                data: dataPoints,
-                borderColor: '#3b82f6',
-                backgroundColor: gradient,
-                borderWidth: 3,
-                pointBackgroundColor: '#ffffff',
-                pointBorderColor: '#3b82f6',
-                pointBorderWidth: 2,
-                pointRadius: 4,
-                pointHoverRadius: 6,
-                fill: true,
-                tension: 0.4 // Smooth curve
-            }]
+            datasets: [
+                {
+                    label: 'Total Activity',
+                    data: dataPoints,
+                    borderColor: '#D4A853',
+                    backgroundColor: gradient,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#F5EDD8',
+                    pointBorderColor: '#D4A853',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Tasks Completed',
+                    data: tasksPoints,
+                    borderColor: '#4A90E2',
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    fill: false,
+                    tension: 0.4,
+                    borderDash: [5, 5]
+                },
+                {
+                    label: 'Habits Logged',
+                    data: habitsPoints,
+                    borderColor: '#50C878',
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    fill: false,
+                    tension: 0.4,
+                    borderDash: [5, 5]
+                }
+            ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    display: false
+                    display: true,
+                    position: 'bottom',
+                    labels: {
+                        font: { family: 'Inter', size: 13 },
+                        color: '#7A6248',
+                        usePointStyle: true,
+                    }
                 },
                 tooltip: {
-                    backgroundColor: '#1e293b',
+                    backgroundColor: '#2C1810',
                     titleFont: { size: 14, family: 'Inter' },
                     bodyFont: { size: 14, family: 'Inter', weight: 'bold' },
                     padding: 12,
                     displayColors: false,
                     callbacks: {
                         label: function(context) {
-                            return `Score: ${context.parsed.y}`;
+                            return `${context.dataset.label}: ${context.parsed.y}`;
                         }
                     }
                 }
@@ -82,18 +111,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     grid: { display: false },
                     ticks: {
                         font: { family: 'Inter' },
-                        color: '#64748b'
+                        color: '#7A6248'
                     }
                 },
                 y: {
                     beginAtZero: true,
                     grid: {
-                        color: '#e2e8f0',
+                        color: '#D4C9A8',
                         drawBorder: false
                     },
                     ticks: {
                         font: { family: 'Inter' },
-                        color: '#64748b',
+                        color: '#7A6248',
                         precision: 0
                     }
                 }

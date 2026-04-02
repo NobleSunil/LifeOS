@@ -1,14 +1,14 @@
 {% extends 'admin_base.html' %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-    <h2 class="fw-bold mb-0" style="color: var(--primary-color);">👥 Users</h2>
+    <h2 class="fw-bold mb-0" style="color: var(--color-primary);">👥 Users</h2>
     <form method="get" class="d-flex" style="max-width: 300px; width: 100%;">
         <input type="text" name="q" class="form-control me-2" placeholder="🔍 Search users..." value="{{ search_query }}">
         <input type="hidden" name="status" value="{{ filter_status }}">
         <button type="submit" class="btn btn-primary d-none">Search</button>
     </form>
 </div>
-
+<div class="canvas-panel">
 <div class="mb-4 d-flex gap-2">
     <a href="?status=all{% if search_query %}&q={{ search_query }}{% endif %}" class="btn {% if filter_status == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %} rounded-pill px-4">All</a>
     <a href="?status=active{% if search_query %}&q={{ search_query }}{% endif %}" class="btn {% if filter_status == 'active' %}btn-primary{% else %}btn-outline-primary{% endif %} rounded-pill px-4">Active</a>
@@ -18,7 +18,7 @@
 <div class="card border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
     <div class="table-responsive">
         <table class="table table-hover mb-0" style="vertical-align: middle;">
-            <thead style="background-color: #f8fafc;">
+            <thead style="background-color: var(--color-surface);">
                 <tr>
                     <th class="ps-4 py-3 text-secondary" style="font-weight: 600;">Username</th>
                     <th class="py-3 text-secondary" style="font-weight: 600;">Email</th>
@@ -30,7 +30,7 @@
             </thead>
             <tbody>
                 {% for user in users %}
-                <tr {% if not user.is_active %}style="opacity: 0.6; background-color: #f1f5f9;"{% endif %}>
+                <tr {% if not user.is_active %}style="opacity: 0.6; background-color: var(--color-surface-2);"{% endif %}>
                     <td class="ps-4 py-3 fw-bold">{{ user.username }}</td>
                     <td class="py-3 text-muted">{{ user.email|default:"-" }}</td>
                     <td class="py-3 text-muted">{{ user.userprofile.age|default:"-" }}</td>
@@ -68,5 +68,6 @@
             </tbody>
         </table>
     </div>
+</div>
 </div>
 {% endblock %}

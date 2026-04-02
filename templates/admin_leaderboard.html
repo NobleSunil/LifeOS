@@ -1,14 +1,14 @@
 {% extends 'admin_base.html' %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold" style="color: var(--primary-color);">🏆 Consistency Leaderboard</h2>
+    <h2 class="fw-bold" style="color: var(--color-primary);">🏆 Consistency Leaderboard</h2>
 </div>
-
+<div class="canvas-panel">
 <div class="card border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
     <div class="table-responsive">
         {% if leaderboard %}
         <table class="table table-hover mb-0" style="vertical-align: middle;">
-            <thead style="background-color: #f8fafc;">
+            <thead style="background-color: var(--color-surface);">
                 <tr>
                     <th class="ps-4 py-3 text-secondary" style="font-weight: 600; width: 80px;">Rank</th>
                     <th class="py-3 text-secondary" style="font-weight: 600;">Username</th>
@@ -20,9 +20,9 @@
             <tbody>
                 {% for entry in leaderboard %}
                 <tr>
-                    <td class="ps-4 py-3 fw-bold text-muted">{{ forloop.counter }}</td>
+                    <td class="ps-4 py-3 leaderboard-rank" style="text-align: left;">{{ forloop.counter }}</td>
                     <td class="py-3 fw-bold fs-6">{{ entry.user.username }}</td>
-                    <td class="py-3 fw-bold text-primary">{{ entry.avg_score }}%</td>
+                    <td class="py-3 fw-bold" style="color: var(--color-primary) !important;">{{ entry.avg_score }}%</td>
                     <td class="py-3 text-muted">{{ entry.active_days }} days</td>
                     <td class="pe-4 py-3 text-end fs-5">
                         {% if forloop.counter == 1 %}🥇
@@ -40,5 +40,6 @@
         </div>
         {% endif %}
     </div>
+</div>
 </div>
 {% endblock %}

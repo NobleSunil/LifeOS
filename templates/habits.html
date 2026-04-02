@@ -4,38 +4,39 @@
 
 <!-- Header -->
 <div class="dashboard-header" style="margin-bottom: 2rem; display:flex; justify-content:space-between; align-items:center;">
-    <h1 style="color: var(--primary-color);">💪 My Habits</h1>
+    <h1 style="color: var(--color-primary);">💪 My Habits</h1>
     <button class="btn btn-primary" id="newHabitBtn" style="padding: 0.6rem 1.25rem; font-size: 1rem;">+ New Habit</button>
 </div>
 
+<div class="canvas-panel">
 <div id="habitsContainer" style="display:flex; flex-direction:column; gap:1.25rem;">
     {% if form.errors %}
-        <div class="alert alert-danger" style="background:var(--danger-color); color:white; padding:10px; border-radius:5px; margin-bottom:1rem;">
+        <div class="alert alert-danger" style="background:var(--color-danger); color:white; padding:10px; border-radius:5px; margin-bottom:1rem;">
             Failed to save habit. Make sure the habit name is unique and valid.
         </div>
     {% endif %}
 
     {% for habit in habits %}
         <!-- Entire Card -->
-        <div class="card habit-card" style="border-radius: 0.5rem; border: 1px solid var(--border-color); background: #fff; transition: all 0.2s; margin-bottom: 0;">
+        <div class="card habit-card" style="border-radius: 0.5rem; border: 1px solid var(--border-color); background: var(--color-surface); transition: all 0.2s; margin-bottom: 0;">
             <!-- Collapsed Header -->
             <div class="habit-header" onclick="toggleHabit('{{ habit.id }}')" data-id="{{ habit.id }}" style="padding: 1.25rem; display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
                 <div style="display:flex; align-items:center; gap: 15px; flex-wrap:wrap;">
                     <h4 style="margin:0; font-size:1.15rem; color:var(--text-primary);">💪 <span style="font-weight:600;">{{ habit.habit_name }}</span></h4>
                     
                     {% if habit.goal %}
-                        <span style="background:var(--primary-color); color:white; padding: 3px 8px; border-radius:4px; font-size:0.75rem;">🎯 {{ habit.goal.title }}</span>
+                        <span style="background:var(--color-primary); color:white; padding: 3px 8px; border-radius:4px; font-size:0.75rem;">🎯 {{ habit.goal.title }}</span>
                     {% endif %}
 
                     <!-- Tracking mode badge -->
                     {% if habit.habit_type == 'checkbox' %}
-                        <span style="background:#f0f4ff; color:#1E3A5F; padding: 3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">☑️ Checkbox</span>
+                        <span style="background:rgba(44, 24, 16, 0.05); color:var(--color-primary); padding: 3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">☑️ Checkbox</span>
                     {% else %}
-                        <span style="background:#fff8f0; color:#b45309; padding: 3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">📊 Slider</span>
+                        <span style="background:rgba(198, 124, 42, 0.1); color:var(--color-warning); padding: 3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">📊 Slider</span>
                     {% endif %}
                     
                     {% if habit.current_streak > 0 %}
-                        <span style="color:var(--danger-color); font-weight:600; font-size: 0.9rem;">🔥 {{ habit.current_streak }} day streak</span>
+                        <span style="color:var(--color-danger); font-weight:600; font-size: 0.9rem;">🔥 {{ habit.current_streak }} day streak</span>
                     {% endif %}
                 </div>
                 
@@ -64,20 +65,20 @@
                     
                     {% if habit.habit_type == 'slider' %}
                         <!-- SLIDER UI -->
-                        <form action="{% url 'save_habit_log' habit.id %}" method="post" style="display:flex; align-items:center; gap:20px; background: #f8fafc; padding: 15px; border-radius:8px; margin:0;">
+                        <form action="{% url 'save_habit_log' habit.id %}" method="post" style="display:flex; align-items:center; gap:20px; background: var(--color-surface); padding: 15px; border-radius:8px; margin:0;">
                             {% csrf_token %}
                             <span style="font-weight:600; color:var(--text-secondary);">0%</span>
                             <input type="range" name="percentage" class="range-slider" min="0" max="100" value="{{ habit.completion_percentage_today }}" oninput="updateHabitSlider('{{ habit.id }}', this.value);" style="flex-grow:1; cursor:pointer;">
                             <span style="font-weight:600; color:var(--text-secondary);">100%</span>
                             <div style="display:flex; align-items:center; gap:15px; margin-left:10px;">
-                                <span id="hval_{{ habit.id }}" style="font-weight:700; color:var(--primary-color); font-size:1.1rem; width:45px; text-align:right;">{{ habit.completion_percentage_today }}%</span>
+                                <span id="hval_{{ habit.id }}" style="font-weight:700; color:var(--color-primary); font-size:1.1rem; width:45px; text-align:right;">{{ habit.completion_percentage_today }}%</span>
                                 <button type="submit" class="btn btn-sm btn-primary" style="padding: 0.4rem 0.8rem; font-weight:600;">Save Log</button>
                             </div>
                         </form>
 
                     {% elif habit.habit_type == 'checkbox' %}
                         <!-- CHECKBOX UI -->
-                        <div style="background: #f8fafc; padding: 15px; border-radius:8px;">
+                        <div style="background: var(--color-surface); padding: 15px; border-radius:8px;">
                             <p style="margin-bottom:12px; font-weight:500;">Did you complete this habit today?</p>
                             <div style="display:flex; gap:12px; align-items:center;">
                                 <form action="{% url 'save_habit_log' habit.id %}" method="post" style="margin:0;">
@@ -93,9 +94,9 @@
                                     <button type="submit" class="btn btn-sm btn-danger" style="padding:0.4rem 1rem; font-weight:600;">❌ Not Done</button>
                                 </form>
                                 {% if habit.completion_percentage_today == 100 %}
-                                    <span style="color:var(--success-color); font-weight:600;">✅ Done today!</span>
+                                    <span style="color:var(--color-success); font-weight:600;">✅ Done today!</span>
                                 {% elif habit.completion_percentage_today == 0 and habit.linked_tasks.count > 0 %}
-                                    <span style="color:var(--danger-color); font-weight:600;">❌ Not done yet</span>
+                                    <span style="color:var(--color-danger); font-weight:600;">❌ Not done yet</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -106,17 +107,17 @@
                 <!-- Weekly View -->
                 <div style="margin-top: 2rem;">
                     <h5 style="color:var(--text-secondary); font-size:0.9rem; letter-spacing:0.05em; text-transform:uppercase; margin-bottom:15px;">This Week</h5>
-                    <div style="display:flex; justify-content:space-between; max-width: 500px; background: #f8fafc; padding: 15px 25px; border-radius:8px;">
+                    <div style="display:flex; justify-content:space-between; max-width: 500px; background: var(--color-surface); padding: 15px 25px; border-radius:8px;">
                         {% for day_data in habit.weekly_data %}
                         <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
                             <span style="font-weight:600; color:var(--text-secondary); font-size:0.85rem;">{{ day_data.day }}</span>
                             {% if habit.habit_type == 'checkbox' %}
                                 {% if day_data.percentage == 100 %}
                                     <span style="font-size:1.2rem;" title="Done">✅</span>
-                                    <span style="font-size:0.75rem; color:var(--success-color);">Done</span>
+                                    <span style="font-size:0.75rem; color:var(--color-success);">Done</span>
                                 {% elif day_data.logged %}
                                     <span style="font-size:1.2rem;" title="Not Done">❌</span>
-                                    <span style="font-size:0.75rem; color:var(--danger-color);">No</span>
+                                    <span style="font-size:0.75rem; color:var(--color-danger);">No</span>
                                 {% else %}
                                     <span style="font-size:1.2rem;" title="Not logged">⬜</span>
                                     <span style="font-size:0.75rem; color:var(--text-secondary);">──</span>
@@ -145,15 +146,15 @@
                         {% for t in habit.linked_tasks %}
                             <div style="display:flex; align-items:center; gap:10px;">
                                 {% if t.status == 'Completed' %}
-                                    <span style="color:var(--success-color);">✅ <span style="color:var(--text-secondary); text-decoration:line-through;">{{ t.title }}</span></span>
+                                    <span style="color:var(--color-success);">✅ <span style="color:var(--text-secondary); text-decoration:line-through;">{{ t.title }}</span></span>
                                 {% else %}
                                     <span style="font-weight:500;">{% if t.task_type == 'trackable' %}📊{% else %}⬜{% endif %} {{ t.title }}</span>
                                 {% endif %}
                                 {% if t.task_type == 'trackable' and t.status != 'Completed' %}
-                                    <span style="background:#e0f0ff; color:#1E3A5F; padding:2px 6px; border-radius:4px; font-size:0.75rem;">{{ t.progress }}%</span>
+                                    <span style="background:rgba(44, 24, 16, 0.08); color:var(--color-primary); padding:2px 6px; border-radius:4px; font-size:0.75rem;">{{ t.progress }}%</span>
                                 {% endif %}
                                 {% if t.goal %}
-                                    <span style="background:var(--primary-color); color:white; padding: 2px 6px; border-radius:4px; font-size:0.7rem;">🎯 {{ t.goal.title }}</span>
+                                    <span style="background:var(--color-primary); color:white; padding: 2px 6px; border-radius:4px; font-size:0.7rem;">🎯 {{ t.goal.title }}</span>
                                 {% endif %}
                             </div>
                         {% empty %}
@@ -185,6 +186,7 @@
         </div>
     {% endfor %}
 </div>
+</div> <!-- End canvas-panel -->
 
 <!-- Habit Form Modal -->
 <div id="habitModal" class="fab-modal">
@@ -194,7 +196,7 @@
         <form id="habitForm" method="post" action="{% url 'habits_list' %}">
             {% csrf_token %}
             <div style="margin-bottom: 15px;">
-                <label style="display:block; margin-bottom:8px; font-weight:600;">Habit Name <span style="color:var(--danger-color);">*</span></label>
+                <label style="display:block; margin-bottom:8px; font-weight:600;">Habit Name <span style="color:var(--color-danger);">*</span></label>
                 <input type="text" name="habit_name" id="habitNameInput" required class="form-control" style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:1rem;">
             </div>
             
@@ -212,14 +214,14 @@
                 <label style="display:block; margin-bottom:8px; font-weight:600;">Tracking Mode</label>
                 <div class="tracking-mode-selector" style="padding:12px; border:1px solid var(--border-color); border-radius:8px;">
                     <label style="display:flex; align-items:flex-start; gap:10px; padding:8px; border-radius:6px; cursor:pointer; margin-bottom:8px;" class="type-option-label" id="tm_slider_label">
-                        <input type="radio" name="habit_type" id="mode_slider" value="slider" checked style="margin-top:3px; accent-color:var(--primary-color);">
+                        <input type="radio" name="habit_type" id="mode_slider" value="slider" checked style="margin-top:3px; accent-color:var(--color-primary);">
                         <div>
                             <strong>📊 Manual with Slider</strong>
                             <div style="color:var(--text-secondary); font-size:0.85rem; margin-top:2px;">Drag slider to log daily progress — e.g. Drink water, Exercise</div>
                         </div>
                     </label>
                     <label style="display:flex; align-items:flex-start; gap:10px; padding:8px; border-radius:6px; cursor:pointer; margin-bottom:8px;" class="type-option-label" id="tm_checkbox_label">
-                        <input type="radio" name="habit_type" id="mode_checkbox" value="checkbox" style="margin-top:3px; accent-color:var(--primary-color);">
+                        <input type="radio" name="habit_type" id="mode_checkbox" value="checkbox" style="margin-top:3px; accent-color:var(--color-primary);">
                         <div>
                             <strong>☑️ Manual with Checkbox</strong>
                             <div style="color:var(--text-secondary); font-size:0.85rem; margin-top:2px;">Simply mark done or not done — e.g. Wake up early, Take medicine</div>

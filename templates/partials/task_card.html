@@ -4,35 +4,35 @@
      data-habit-id="{{ task.habit.id|default:'' }}"
      data-is-overdue="{% if task.due_color == 'danger' %}true{% else %}false{% endif %}"
      data-is-today="{% if task.due_color == 'warning' %}true{% else %}false{% endif %}"
-     style="padding: 1.25rem; border-radius: 0.5rem; border: 1px solid var(--border-color); display:flex; flex-direction:column; background: #fff; transition: all 0.2s; margin-bottom: 0;">
+     style="padding: 1.25rem; border-radius: 0.5rem; border: 1px solid var(--border-color); display:flex; flex-direction:column; background: var(--color-surface); transition: all 0.2s; margin-bottom: 0;">
 
     <!-- Main row: title + actions -->
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <div>
             <h4 style="margin:0; font-size:1.15rem; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
-                {% if is_completed %}<span style="color:var(--success-color);">✅</span><span style="text-decoration:line-through; color:var(--text-secondary);">{% else %}⬜ <span style="font-weight:600;">{% endif %}{{ task.title }}</span>
+                {% if is_completed %}<span style="color:var(--color-success);">✅</span><span style="text-decoration:line-through; color:var(--text-secondary);">{% else %}⬜ <span style="font-weight:600;">{% endif %}{{ task.title }}</span>
             </h4>
             <div style="font-size: 0.85rem; margin-top: 10px; display:flex; gap: 8px; align-items:center; flex-wrap: wrap;">
                 {% if border_class == 'border-danger' %}
-                    <span style="font-weight:600; color:var(--danger-color);">⚠️ {{ task.due_label }}</span>
+                    <span style="font-weight:600; color:var(--color-danger);">⚠️ {{ task.due_label }}</span>
                 {% elif border_class == 'border-warning' %}
-                    <span style="font-weight:600; color:var(--warning-color);">🕒 {{ task.due_label }}</span>
+                    <span style="font-weight:600; color:var(--color-warning);">🕒 {{ task.due_label }}</span>
                 {% elif border_class == '' and task.due_date %}
-                    <span style="font-weight:500; color:var(--primary-color);">📅 {{ task.due_label }}</span>
+                    <span style="font-weight:500; color:var(--color-primary);">📅 {{ task.due_label }}</span>
                 {% else %}
                     <span style="color:var(--text-secondary);">📅 {{ task.due_label }}</span>
                 {% endif %}
 
                 {% if task.task_type == 'trackable' %}
-                    <span style="background: #e0f0ff; color: #1E3A5F; padding: 3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">📊 {{ task.progress }}%</span>
+                    <span style="background: rgba(44, 24, 16, 0.08); color: var(--color-primary); padding: 3px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;">📊 {{ task.progress }}%</span>
                 {% endif %}
 
                 {% if task.goal %}
-                    <span style="background:var(--primary-color); color:white; padding: 3px 8px; border-radius:4px; font-size:0.75rem;">🎯 {{ task.goal.title }}</span>
+                    <span style="background:var(--color-primary); color:white; padding: 3px 8px; border-radius:4px; font-size:0.75rem;">🎯 {{ task.goal.title }}</span>
                 {% endif %}
                 
                 {% if task.habit %}
-                    <span style="background:var(--success-color); color:white; padding: 3px 8px; border-radius:4px; font-size:0.75rem;">💪 {{ task.habit.habit_name }}</span>
+                    <span style="background:var(--color-success); color:white; padding: 3px 8px; border-radius:4px; font-size:0.75rem;">💪 {{ task.habit.habit_name }}</span>
                 {% endif %}
                 
                 {% if not task.goal and not task.habit %}
@@ -102,14 +102,14 @@
                 <span style="font-size:0.85rem; color:var(--text-secondary);">100%</span>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span id="tval-{{ task.id }}" style="font-weight:700; color:var(--primary-color); font-size:1rem;">{{ task.progress|default:0 }}%</span>
+                <span id="tval-{{ task.id }}" style="font-weight:700; color:var(--color-primary); font-size:1rem;">{{ task.progress|default:0 }}%</span>
                 <button type="submit" class="btn btn-sm btn-outline-secondary" style="padding:0.3rem 0.8rem; font-size:0.9rem;">Save Progress</button>
             </div>
         </form>
 
         <!-- 100% Prompt -->
         {% if task.progress == 100 %}
-        <div style="margin-top:0.75rem; background:#F0FDF4; border:1px solid #BBF7D0; border-radius:6px; padding:0.6rem 1rem; font-size:0.9rem; color:#15803D; display:flex; justify-content:space-between; align-items:center;">
+        <div style="margin-top:0.75rem; background:rgba(74, 124, 89, 0.05); border:1px solid var(--color-success); border-radius:6px; padding:0.6rem 1rem; font-size:0.9rem; color:var(--color-success); display:flex; justify-content:space-between; align-items:center;">
             <span>💡 You are at 100%! Ready to mark complete?</span>
             <form action="{% url 'complete_task' task.id %}" method="post" style="margin:0;">
                 {% csrf_token %}

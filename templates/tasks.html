@@ -4,13 +4,14 @@
 
 <!-- Header -->
 <div class="dashboard-header" style="margin-bottom: 2rem; display:flex; justify-content:space-between; align-items:center;">
-    <h1 style="color: var(--primary-color);">✅ My Tasks</h1>
+    <h1 style="color: var(--color-primary);">✅ My Tasks</h1>
     <button class="btn btn-primary" id="newTaskBtn" style="padding: 0.6rem 1.25rem; font-size: 1rem;">+ New Task</button>
 </div>
 
-<!-- Filters -->
+<div class="canvas-panel">
+    <!-- Filters -->
 <div class="tabs-container" style="display:flex; gap:10px; margin-bottom:2.5rem; border-bottom:1px solid var(--border-color); padding-bottom:1rem; flex-wrap:wrap; align-items:center;">
-    <button class="filter-tab active" data-filter="All" style="background:none; border:none; font-weight:600; padding:5px 15px; cursor:pointer; color:var(--primary-color); border-bottom:2px solid var(--primary-color); font-size:1rem; transition: color 0.2s;">All</button>
+    <button class="filter-tab active" data-filter="All" style="background:none; border:none; font-weight:600; padding:5px 15px; cursor:pointer; color:var(--color-primary); border-bottom:2px solid var(--color-primary); font-size:1rem; transition: color 0.2s;">All</button>
     <button class="filter-tab" data-filter="Today" style="background:none; border:none; font-weight:500; padding:5px 15px; cursor:pointer; color:var(--text-secondary); font-size:1rem; transition: color 0.2s;">Today</button>
     <button class="filter-tab" data-filter="Overdue" style="background:none; border:none; font-weight:500; padding:5px 15px; cursor:pointer; color:var(--text-secondary); font-size:1rem; transition: color 0.2s;">Overdue</button>
     
@@ -46,7 +47,7 @@
     <!-- Section 1: ⚠️ OVERDUE -->
     {% if overdue_tasks %}
     <div class="task-section" id="section-overdue">
-        <h4 style="color:var(--danger-color); font-size:1.1rem; letter-spacing:0.05em; margin-bottom:1.25rem; text-transform:uppercase;">⚠️ Overdue</h4>
+        <h4 style="color:var(--color-danger); font-size:1.1rem; letter-spacing:0.05em; margin-bottom:1.25rem; text-transform:uppercase;">⚠️ Overdue</h4>
         <div class="list-section" style="display:flex; flex-direction:column; gap:1.25rem;">
             {% for task in overdue_tasks %}
                 {% include 'partials/task_card.html' with task=task border_class="border-danger" %}
@@ -58,7 +59,7 @@
     <!-- Section 2: 📌 TODAY -->
     {% if today_tasks %}
     <div class="task-section" id="section-today">
-        <h4 style="color:var(--warning-color); font-size:1.1rem; letter-spacing:0.05em; margin-bottom:1.25rem; text-transform:uppercase;">📌 Today</h4>
+        <h4 style="color:var(--color-warning); font-size:1.1rem; letter-spacing:0.05em; margin-bottom:1.25rem; text-transform:uppercase;">📌 Today</h4>
         <div class="list-section" style="display:flex; flex-direction:column; gap:1.25rem;">
             {% for task in today_tasks %}
                 {% include 'partials/task_card.html' with task=task border_class="border-warning" %}
@@ -74,14 +75,14 @@
             {% for task in pending_tasks %}
                 {% include 'partials/task_card.html' with task=task border_class="" %}
             {% empty %}
-                <p class="empty-section-msg" style="color:var(--text-secondary); padding: 1.5rem; background: #f8fafc; border-radius:0.5rem; text-align:center;">No pending tasks. You are all caught up! 🎉</p>
+                <p class="empty-section-msg" style="color:var(--text-secondary); padding: 1.5rem; background: var(--color-surface); border-radius:0.5rem; text-align:center;">No pending tasks. You are all caught up! 🎉</p>
             {% endfor %}
         </div>
     </div>
 
     <!-- Section 4: ✅ COMPLETED -->
     <div class="task-section" id="section-completed" style="margin-top: 1rem;">
-        <div id="completedToggle" style="cursor:pointer; display:flex; align-items:center; gap:10px; padding: 1rem 1.5rem; background: #f1f5f9; border-radius:0.5rem; color:var(--text-secondary); font-weight:600; border: 1px solid var(--border-color); transition: background 0.2s;">
+        <div id="completedToggle" style="cursor:pointer; display:flex; align-items:center; gap:10px; padding: 1rem 1.5rem; background: var(--color-surface-2); border-radius:0.5rem; color:var(--text-secondary); font-weight:600; border: 1px solid var(--border-color); transition: background 0.2s;">
             <span style="font-size:1.1rem; color: var(--text-primary);">✅ COMPLETED ({{ completed_tasks|length }})</span>
             <span style="flex-grow:1;"></span>
             <span id="completedIcon" style="font-size:1.2rem; transition: transform 0.3s ease;">▸</span>
@@ -100,6 +101,7 @@
     <!-- Empty Filter Message -->
     <div id="emptyFilterPlaceholder" style="display:none; text-align:center; padding: 4rem 0; color:var(--text-secondary); font-size:1.1rem; background: var(--card-bg); border-radius: 0.5rem; border: 1px dashed var(--border-color);">No tasks found for this filter.</div>
 </div>
+</div> <!-- End canvas-panel -->
 
 <!-- Task Form Modal -->
 <div id="taskModal" class="fab-modal">
@@ -109,7 +111,7 @@
         <form id="taskForm" method="post" action="{% url 'tasks_list' %}">
             {% csrf_token %}
             <div style="margin-bottom: 15px;">
-                <label style="display:block; margin-bottom:8px; font-weight:600;">Title <span style="color:var(--danger-color);">*</span></label>
+                <label style="display:block; margin-bottom:8px; font-weight:600;">Title <span style="color:var(--color-danger);">*</span></label>
                 <input type="text" name="title" id="taskTitleInput" required class="form-control" style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:1rem;">
             </div>
             
@@ -128,7 +130,7 @@
                     <input type="date" name="due_date" id="taskDueInput" class="form-control" style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:1rem;">
                 </div>
             </div>
-            <p id="dateError" style="color:var(--danger-color); font-size:0.85rem; display:none; margin-bottom:15px; font-weight:500;">⚠️ Due date must be strictly on or after the Start date.</p>
+            <p id="dateError" style="color:var(--color-danger); font-size:0.85rem; display:none; margin-bottom:15px; font-weight:500;">⚠️ Due date must be strictly on or after the Start date.</p>
             
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 25px;">
                 <div>
@@ -163,14 +165,14 @@
                 <label style="display:block; margin-bottom:8px; font-weight:600;">Task Type</label>
                 <div class="task-type-selector" style="padding:12px; border:1px solid var(--border-color); border-radius:8px;">
                     <label style="display:flex; align-items:flex-start; gap:10px; padding:8px; border-radius:6px; cursor:pointer; margin-bottom:8px;" class="type-option-label">
-                        <input type="radio" name="task_type" id="type_simple" value="simple" checked style="margin-top:3px; accent-color:var(--primary-color);">
+                        <input type="radio" name="task_type" id="type_simple" value="simple" checked style="margin-top:3px; accent-color:var(--color-primary);">
                         <div>
                             <strong>Simple</strong>
                             <div style="color:var(--text-secondary); font-size:0.85rem; margin-top:2px;">Just mark complete when done</div>
                         </div>
                     </label>
                     <label style="display:flex; align-items:flex-start; gap:10px; padding:8px; border-radius:6px; cursor:pointer;" class="type-option-label">
-                        <input type="radio" name="task_type" id="type_trackable" value="trackable" style="margin-top:3px; accent-color:var(--primary-color);">
+                        <input type="radio" name="task_type" id="type_trackable" value="trackable" style="margin-top:3px; accent-color:var(--color-primary);">
                         <div>
                             <strong>Trackable</strong>
                             <div style="color:var(--text-secondary); font-size:0.85rem; margin-top:2px;">Track progress % along the way</div>
@@ -187,8 +189,8 @@
 <!-- Auto Complete Prompt Modal (Triggers inside tasks.js) -->
 <div id="autoCompleteGoalModal" class="fab-modal" style="z-index: 1100;">
     <div class="fab-modal-content" style="text-align:center; padding: 3rem 2rem;">
-        <h2 style="margin-bottom: 1rem; color:var(--success-color);">🎉 Goal Accomplished!</h2>
-        <p style="margin-bottom: 2rem; font-size:1.15rem;">Mark goal "<span id="autoCompleteGoalName" style="font-weight:700; color:var(--primary-color);"></span>" as Complete?</p>
+        <h2 style="margin-bottom: 1rem; color:var(--color-success);">🎉 Goal Accomplished!</h2>
+        <p style="margin-bottom: 2rem; font-size:1.15rem;">Mark goal "<span id="autoCompleteGoalName" style="font-weight:700; color:var(--color-primary);"></span>" as Complete?</p>
         <div style="display:flex; justify-content:center; gap: 15px;">
             <form id="autoCompleteGoalForm" method="post" action="" style="margin:0;">
                 {% csrf_token %}

@@ -4,26 +4,49 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap');
 
 :root {
-    /* === Palette matching style.css exactly === */
-    --bg-color: #FDFBF7;
-    --text-primary: #2C3539;
-    --text-secondary: #71717A;
-    --primary-color: #1E3A5F;
-    --primary-hover: #152A47;
-    --success-color: #4A6741;
-    --danger-color: #C24A4A;
-    --warning-color: #D4A373;
-    --card-bg: #FFFFFF;
-    --border-color: #EAE6DF;
+    /* New Global Design Tokens */
+    --color-bg: #F5EDD8;
+    --color-surface: #FDFAF4;
+    --color-surface-2: #FFFFFF;
+    --color-primary: #2C1810;
+    --color-secondary: #6B4A1A;
+    --color-accent: #D4A853;
+    --color-text-primary: #2C1810;
+    --color-text-muted: #7A6248;
+    --color-border: #D4C9A8;
+    --color-success: #4A7C59;
+    --color-warning: #C67C2A;
+    --color-danger: #8B2635;
+
+    /* Legacy Map */
+    --bg-color: var(--color-bg);
+    --text-primary: var(--color-text-primary);
+    --text-secondary: var(--color-text-muted);
+    --primary-color: var(--color-primary);
+    --primary-hover: var(--color-secondary);
+    --success-color: var(--color-success);
+    --danger-color: var(--color-danger);
+    --warning-color: var(--color-warning);
+    --card-bg: var(--color-surface);
+    --border-color: var(--color-border);
     --font-family: 'Outfit', sans-serif;
     --font-heading: 'Playfair Display', serif;
-    --shadow-sm: 0 4px 14px 0 rgba(0, 0, 0, 0.03);
-    --shadow-md: 0 8px 24px -2px rgba(0, 0, 0, 0.05);
+    --shadow-sm: 0 4px 14px 0 rgba(44, 24, 16, 0.08);
+    --shadow-md: 0 8px 24px -2px rgba(44, 24, 16, 0.1);
 
     /* Admin specific layout */
-    --navbar-height: 68px;
+    --navbar-height: 56px;
     --sidebar-width: 270px;
-    --accent-color: #1E3A5F; /* same as primary */
+    --accent-color: var(--color-accent);
+
+    /* Bootstrap Overrides */
+    --bs-primary: var(--color-primary);
+    --bs-secondary: var(--color-secondary);
+    --bs-success: var(--color-success);
+    --bs-warning: var(--color-warning);
+    --bs-danger: var(--color-danger);
+    --bs-body-bg: var(--color-bg);
+    --bs-body-color: var(--color-text-primary);
 }
 
 /* ==================== RESET & BASE ==================== */
@@ -43,7 +66,7 @@ html {
 
 h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
-    color: var(--primary-color);
+    color: var(--color-primary);
     font-weight: 600;
 }
 
@@ -51,16 +74,23 @@ a { text-decoration: none; }
 
 /* ==================== NAVBAR ==================== */
 .admin-navbar {
-    background-color: var(--card-bg);
-    border-bottom: 1px solid var(--border-color);
-    height: var(--navbar-height);
+    background: var(--color-primary) !important;
+    border-radius: 50px;
+    box-shadow: 0 10px 25px rgba(44, 24, 16, 0.2);
+    margin: 1.5rem auto 2rem auto;
+    width: 90%;
+    max-width: 900px;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
     z-index: 1040;
-    box-shadow: var(--shadow-sm);
+    height: auto;
+    padding: 0.5rem 1.5rem;
+    position: sticky;
+    top: 1.5rem;
 }
 
 .admin-navbar .navbar-brand {
     font-family: var(--font-heading);
-    color: var(--primary-color) !important;
+    color: var(--color-bg) !important;
     font-size: 1.4rem;
     font-weight: 700;
     letter-spacing: -0.01em;
@@ -68,12 +98,12 @@ a { text-decoration: none; }
 
 .admin-navbar .nav-link {
     font-family: var(--font-family);
-    color: var(--text-secondary) !important;
+    color: var(--color-bg) !important;
     font-weight: 500;
 }
 
 .admin-navbar .nav-link:hover {
-    color: var(--primary-color) !important;
+    color: var(--color-surface-2) !important;
 }
 
 /* Bootstrap dropdown override */
@@ -93,8 +123,8 @@ a { text-decoration: none; }
 }
 
 .admin-navbar .dropdown-item:hover {
-    background-color: #f1f5f9;
-    color: var(--primary-color);
+    background-color: var(--color-surface-2);
+    color: var(--color-primary);
 }
 
 /* ==================== SIDEBAR ==================== */
@@ -124,7 +154,7 @@ a { text-decoration: none; }
 .admin-sidebar .sidebar-header h5 {
     font-family: var(--font-heading);
     font-size: 1.2rem;
-    color: var(--primary-color);
+    color: var(--color-primary);
     font-weight: 700;
 }
 
@@ -134,7 +164,7 @@ a { text-decoration: none; }
 }
 
 .admin-sidebar .sidebar-header button:hover {
-    color: var(--primary-color) !important;
+    color: var(--color-primary) !important;
 }
 
 .sidebar-menu {
@@ -157,21 +187,21 @@ a { text-decoration: none; }
 }
 
 .menu-item:hover {
-    background-color: #f1f5f9;
-    color: var(--primary-color);
+    background-color: var(--color-surface-2);
+    color: var(--color-primary);
 }
 
 .menu-item.active {
-    background-color: var(--primary-color);
+    background-color: var(--color-primary);
     color: white;
 }
 
 .menu-item.text-danger {
-    color: var(--danger-color) !important;
+    color: var(--color-danger) !important;
 }
 .menu-item.text-danger:hover {
-    background-color: #fff1f2;
-    color: var(--danger-color) !important;
+    background-color: rgba(139, 38, 53, 0.08);
+    color: var(--color-danger) !important;
 }
 
 /* ==================== SIDEBAR OVERLAY ==================== */
@@ -193,8 +223,8 @@ a { text-decoration: none; }
 
 /* ==================== MAIN CONTENT ==================== */
 .admin-main-content {
-    margin-top: var(--navbar-height);
-    min-height: calc(100vh - var(--navbar-height));
+    margin-top: 0;
+    min-height: 100vh;
     background-color: var(--bg-color);
 }
 
@@ -205,7 +235,7 @@ a { text-decoration: none; }
 /* ==================== PAGE HEADERS ==================== */
 .admin-page-title {
     font-family: var(--font-heading);
-    color: var(--primary-color);
+    color: var(--color-primary);
     font-size: 1.75rem;
     font-weight: 700;
     margin-bottom: 0.25rem;
@@ -247,7 +277,7 @@ a { text-decoration: none; }
 
 .stat-card-value {
     font-family: var(--font-heading);
-    color: var(--primary-color);
+    color: var(--color-primary);
     font-size: 2.5rem;
     font-weight: 700;
     margin: 0;
@@ -277,7 +307,7 @@ a { text-decoration: none; }
 .admin-card-header h5,
 .admin-card-header h6 {
     font-family: var(--font-heading);
-    color: var(--primary-color);
+    color: var(--color-primary);
     margin: 0;
     font-size: 1.1rem;
 }
@@ -298,7 +328,7 @@ a { text-decoration: none; }
     background-color: var(--card-bg);
     border-bottom: 1px solid var(--border-color);
     font-family: var(--font-heading);
-    color: var(--primary-color);
+    color: var(--color-primary);
 }
 
 /* ==================== TABLES ==================== */
@@ -339,10 +369,10 @@ a { text-decoration: none; }
     border-radius: 4px;
 }
 
-.badge.bg-success { background-color: var(--success-color) !important; }
-.badge.bg-danger  { background-color: var(--danger-color) !important; }
-.badge.bg-warning { background-color: var(--warning-color) !important; color: white !important; }
-.badge.bg-primary { background-color: var(--primary-color) !important; }
+.badge.bg-success { background-color: var(--color-success) !important; }
+.badge.bg-danger  { background-color: var(--color-danger) !important; }
+.badge.bg-warning { background-color: var(--color-warning) !important; color: white !important; }
+.badge.bg-primary { background-color: var(--color-primary) !important; }
 
 /* ==================== BUTTONS ==================== */
 .btn {
@@ -353,8 +383,8 @@ a { text-decoration: none; }
 }
 
 .btn-primary {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
     color: white;
 }
 .btn-primary:hover {
@@ -364,19 +394,19 @@ a { text-decoration: none; }
 }
 
 .btn-success {
-    background-color: var(--success-color);
-    border-color: var(--success-color);
+    background-color: var(--color-success);
+    border-color: var(--color-success);
 }
 .btn-danger {
-    background-color: var(--danger-color);
-    border-color: var(--danger-color);
+    background-color: var(--color-danger);
+    border-color: var(--color-danger);
 }
 .btn-outline-primary {
-    color: var(--primary-color);
-    border-color: var(--primary-color);
+    color: var(--color-primary);
+    border-color: var(--color-primary);
 }
 .btn-outline-primary:hover {
-    background-color: var(--primary-color);
+    background-color: var(--color-primary);
     color: white;
 }
 
@@ -391,19 +421,19 @@ a { text-decoration: none; }
 }
 
 .form-control:focus, .form-select:focus {
-    border-color: var(--primary-color);
+    border-color: var(--color-primary);
     box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1);
     outline: none;
 }
 
 /* ==================== SIDEBAR TOGGLE BUTTON IN NAVBAR ==================== */
 #adminSidebarToggle {
-    color: var(--text-secondary) !important;
+    color: var(--color-bg) !important;
     font-size: 1.4rem;
 }
 
 #adminSidebarToggle:hover {
-    color: var(--primary-color) !important;
+    color: var(--color-surface-2) !important;
 }
 
 /* ==================== CHART CONTAINERS ==================== */
@@ -418,6 +448,23 @@ a { text-decoration: none; }
     color: var(--text-secondary);
 }
 
+/* ==================== CANVAS PANEL ==================== */
+.canvas-panel {
+    background: var(--color-surface);
+    border: 1px dashed var(--color-border);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 2rem;
+}
+
+.canvas-panel .card,
+.canvas-panel .admin-card,
+.canvas-panel .stat-card {
+    background-color: var(--color-bg) !important;
+    border-color: var(--color-border) !important;
+}
+
 .empty-state p {
     font-size: 1rem;
     margin: 0;
@@ -428,13 +475,13 @@ a { text-decoration: none; }
     font-family: var(--font-heading);
     font-size: 1.2rem;
     font-weight: 700;
-    color: var(--primary-color);
+    color: var(--color-primary);
     width: 40px;
     text-align: center;
 }
 
 /* ==================== UTILITIES ==================== */
-.text-primary-custom { color: var(--primary-color) !important; }
+.text-primary-custom { color: var(--color-primary) !important; }
 .text-muted-custom   { color: var(--text-secondary) !important; }
 .bg-card             { background-color: var(--card-bg) !important; }
 .border-custom       { border-color: var(--border-color) !important; }

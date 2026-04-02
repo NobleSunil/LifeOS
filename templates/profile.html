@@ -45,7 +45,7 @@
                 <span class="avatar-initial">{{ user.username.0|upper }}</span>
             </div>
             
-            <h3 style="color: var(--primary-color); margin-bottom: 0.5rem;">@{{ user.username }}</h3>
+            <h3 style="color: var(--color-primary); margin-bottom: 0.5rem;">@{{ user.username }}</h3>
             <p style="color: var(--text-secondary); margin-bottom: 1rem;">Joined on {{ user.date_joined|date:"F j, Y" }}</p>
             
             {% if profile.bio %}
