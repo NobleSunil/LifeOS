@@ -11,10 +11,10 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=9">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=10">
 </head>
 
-<body>
+<body class="{% block body_class %}{% endblock %}">
     <!-- Overlay for Sidebar -->
     <div id="sidebarOverlay" class="sidebar-overlay"></div>
     <div class="app-container">
