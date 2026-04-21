@@ -43,8 +43,7 @@
                     <li><a href="{% url 'goals_list' %}">🎯 Goals</a></li>
                     <li><a href="{% url 'habits_list' %}">💪 Habits</a></li>
                     <li><a href="{% url 'tasks_list' %}">✅ Tasks {% if overdue_count > 0 %}<span class="badge"
-                                style="background-color: var(--color-danger); color: white; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.75rem; margin-left: 5px;">{{
-                                overdue_count }}</span>{% endif %}</a></li>
+                                style="background-color: var(--color-danger); color: white; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.75rem; margin-left: 5px;">{{ overdue_count }}</span>{% endif %}</a></li>
                     <li><a href="{% url 'reflections_list' %}">📓 Reflection</a></li>
                     {% endif %}
 

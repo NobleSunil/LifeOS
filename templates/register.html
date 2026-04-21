@@ -6,6 +6,15 @@
 <div class="auth-wrapper">
     <div class="card auth-card">
         <h2>Join LifeOS</h2>
+        {% if form.errors %}
+            <div style="background-color: var(--color-danger); color: white; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem;">
+                {% if form.non_field_errors %}
+                    {{ form.non_field_errors }}
+                {% else %}
+                    Please correct the errors below.
+                {% endif %}
+            </div>
+        {% endif %}
         <form method="post" class="auth-form">
             {% csrf_token %}
             {{ form.as_p }}

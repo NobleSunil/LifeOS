@@ -21,9 +21,14 @@ def register(request):
         if form.is_valid():
             user = form.save(commit=False)
             user.set_password(form.cleaned_data['password'])
-            user.save()
+            user.save()  # Signal creates UserProfile automatically
+            
+            profile = user.userprofile
             age = form.cleaned_data.get('age')
-            UserProfile.objects.create(user=user, age=age)
+            if age is not None:
+                profile.age = age
+                profile.save()
+                
             login(request, user)
             return redirect('dashboard')
     else:
@@ -39,33 +44,10 @@ class CustomLoginView(LoginView):
             return '/admin-panel/overview/'
         return super().get_success_url()
 
-def get_habit_streak(habit, today):
-    # Retrieve all completions for this habit ordered backwards
-    completions = HabitCompletion.objects.filter(
-        habit=habit, date__lte=today, completion_percentage__gt=0
-    ).order_by('-date')
-    
-    streak = 0
-    current_date = today
-    
-    # Check if today is completed
-    today_completed = completions.filter(date=today).exists()
-    
-    # If not completed today, we might still have a streak ending yesterday
-    if not today_completed:
-        current_date = today - datetime.timedelta(days=1)
-        
-    for comp in completions:
-        if comp.date == current_date:
-            streak += 1
-            current_date -= datetime.timedelta(days=1)
-        elif comp.date < current_date:
-            break
-            
-    return streak
-
-def get_task_score(user):
-    tasks = Task.objects.filter(user=user)
+def get_task_score(user, target_date):
+    # Only evaluate tasks that were due on the target date to measure daily hit rate properly
+    # This prevents the score from being a lifetime average.
+    tasks = Task.objects.filter(user=user, due_date=target_date)
     if not tasks.exists():
         return 0
     total_possible = tasks.count() * 100
@@ -96,14 +78,14 @@ def get_habit_score(user, target_date):
 
 def get_daily_score(user, target_date):
     habit_score = get_habit_score(user, target_date)
-    task_score = get_task_score(user)
+    task_score = get_task_score(user, target_date)
     return round((habit_score + task_score) / 2)
 
 @login_required
 def dashboard(request):
     user = request.user
-    today = datetime.date.today()
-    current_hour = datetime.datetime.now().hour
+    today = timezone.localdate()
+    current_hour = timezone.localtime().hour
     
     # --- Greeting Logic ---
     if 5 <= current_hour < 12:
@@ -186,7 +168,7 @@ def dashboard(request):
     for h in today_habits:
         completion = HabitCompletion.objects.filter(habit=h, date=today).first()
         h.completion_today = completion.completion_percentage if completion else None
-        h.streak = get_habit_streak(h, today)
+        h.streak = calculate_streak(h)
         
         pct = h.completion_today or 0
         if pct == 0: h.progress_color = 'secondary'
@@ -333,6 +315,7 @@ def delete_goal(request, goal_id):
 # Complete goal view
 @login_required
 def complete_goal(request, goal_id):
+    from django.contrib import messages
     goal = get_object_or_404(
         Goal,
         id=goal_id,
@@ -344,6 +327,9 @@ def complete_goal(request, goal_id):
         goal.status = 'Completed'
         goal.completed_at = timezone.now()
         goal.save()
+        messages.success(request, f"Goal '{goal.title}' successfully completed!")
+    else:
+        messages.error(request, f"Goal '{goal.title}' cannot be completed until progress is 100%. User attempted to bypass.")
     return redirect('goals_list')
 
 
@@ -412,7 +398,7 @@ def get_weekly_data(habit):
 def habits_list(request):
     user = request.user
     habits = Habit.objects.filter(user=user).order_by('-created_at')
-    today = datetime.date.today()
+    today = timezone.localdate()
     
     user_goals = Goal.objects.filter(user=user, status='Active')
     
@@ -465,13 +451,12 @@ def complete_habit(request, habit_id):
 @login_required
 def save_habit_log(request, habit_id):
     if request.method == 'POST':
-        from datetime import date
         habit = get_object_or_404(
             Habit,
             id=habit_id,
             user=request.user
         )
-        today = date.today()
+        today = timezone.localdate()
 
         if habit.habit_type == 'checkbox':
             is_done = request.POST.get(
@@ -501,7 +486,7 @@ def save_habit_log(request, habit_id):
 @login_required
 def tasks_list(request):
     user = request.user
-    today = datetime.date.today()
+    today = timezone.localdate()
     all_tasks = Task.objects.filter(user=user)
     
     # 1. Overdue
@@ -638,7 +623,7 @@ def edit_task(request, task_id):
 
 # ==================== REFLECTIONS ====================
 def calculate_reflection_streak(user):
-    today = datetime.date.today()
+    today = timezone.localdate()
     streak = 0
     current_date = today
 
@@ -659,7 +644,7 @@ def calculate_reflection_streak(user):
 @login_required
 def reflections_list(request):
     user = request.user
-    today = datetime.date.today()
+    today = timezone.localdate()
     
     # Handle Save
     if request.method == 'POST':

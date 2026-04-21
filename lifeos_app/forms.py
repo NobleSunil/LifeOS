@@ -4,6 +4,7 @@ from .models import Goal, Habit, Task, Reflection, UserProfile
 
 class UserProfileForm(forms.ModelForm):
     email = forms.EmailField(required=True)
+    age = forms.IntegerField(required=True, min_value=4, max_value=120, label="Age")
 
     class Meta:
         model = UserProfile
@@ -29,7 +30,7 @@ class UserProfileForm(forms.ModelForm):
 class UserRegistrationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
     password_confirm = forms.CharField(widget=forms.PasswordInput, label="Confirm Password")
-    age = forms.IntegerField(required=False, min_value=0, label="Age (Optional)")
+    age = forms.IntegerField(required=False, min_value=1, max_value=120, label="Age (Optional)")
 
     class Meta:
         model = User

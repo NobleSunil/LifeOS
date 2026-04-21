@@ -2,6 +2,9 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.db.models import Count, Q
 
 class UserProfile(models.Model):
     """
@@ -62,6 +65,13 @@ class Goal(models.Model):
         blank=True
     )
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.goal_type == 'habit_based' and not self.target_days:
+            raise ValidationError({'target_days': 'Habit Based goals must have target_days.'})
+        if self.goal_type == 'task_based':
+            self.target_days = None
+
     # Goal type cannot change after creation
     # Enforced in form
 
@@ -86,50 +96,37 @@ class Goal(models.Model):
 
         # HABIT BASED GOAL
         elif self.goal_type == 'habit_based':
-            habits = self.linked_habits.all()
-            if not habits.exists():
-                return 0
-            if not self.target_days:
+            if not self.linked_habits.exists() or not self.target_days:
                 return 0
 
-            from datetime import date
-            today = date.today()
+            from django.utils import timezone
+            today = timezone.localdate()
+
+            # Optimizing with a single query using Django annotation
+            checkbox_q = Q(habit_type='checkbox', habitcompletion__completion_percentage=100)
+            slider_q = Q(habit_type='slider', habitcompletion__completion_percentage__gt=0)
+            date_filter = Q(
+                habitcompletion__date__gte=self.created_at.date(),
+                habitcompletion__date__lte=today
+            )
+
+            annotated_habits = self.linked_habits.annotate(
+                days_done=Count(
+                    'habitcompletion',
+                    filter=date_filter & (checkbox_q | slider_q)
+                )
+            )
+
             habit_progresses = []
-
-            for habit in habits:
-                # count days this habit was logged
-                # since goal was created
-                if habit.habit_type == 'checkbox':
-                    # checkbox: count days = 100%
-                    days_done = HabitCompletion.objects.filter(
-                        habit=habit,
-                        date__gte=self.created_at.date(),
-                        date__lte=today,
-                        completion_percentage=100
-                    ).count()
-                else:
-                    # slider: count days > 0%
-                    days_done = HabitCompletion.objects.filter(
-                        habit=habit,
-                        date__gte=self.created_at.date(),
-                        date__lte=today,
-                        completion_percentage__gt=0
-                    ).count()
-
-                # cap at target days
-                days_done = min(
-                    days_done,
-                    self.target_days
-                )
-                habit_progress = round(
-                    (days_done / self.target_days) * 100
-                )
+            for habit in annotated_habits:
+                days_done = min(habit.days_done, self.target_days)
+                habit_progress = round((days_done / self.target_days) * 100)
                 habit_progresses.append(habit_progress)
 
+            if not habit_progresses:
+                return 0
             # average across all linked habits
-            return round(
-                sum(habit_progresses) / len(habit_progresses)
-            )
+            return round(sum(habit_progresses) / len(habit_progresses))
 
         return 0
 
@@ -264,3 +261,9 @@ class Reflection(models.Model):
     def __str__(self):
         # Returns a string representation showing user and date of reflection
         return f"Reflection by {self.user.username} on {self.date}"
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    """Ensure UserProfile is created seamlessly via Signals rather than strictly in views."""
+    if created:
+        UserProfile.objects.get_or_create(user=instance)
