@@ -1,4 +1,4 @@
-# LifeOS — Personal Productivity & Life Management System
+# LifeOS ï¿½ Personal Productivity & Life Management System
 
 LifeOS is a personal productivity web application built with Django to help users organize their goals, manage daily tasks, track habits, reflect on their progress, and improve their lifestyle through consistent routines and measurable results.
 
@@ -69,27 +69,27 @@ LifeOS helps users:
 
 ```bash
 LifeOS/
-¦
+ï¿½
 +-- lifeos_app/
-¦   +-- models.py
-¦   +-- views.py
-¦   +-- forms.py
-¦   +-- urls.py
-¦   +-- templates/
-¦
+ï¿½   +-- models.py
+ï¿½   +-- views.py
+ï¿½   +-- forms.py
+ï¿½   +-- urls.py
+ï¿½   +-- templates/
+ï¿½
 +-- lifeos_project/
-¦   +-- settings.py
-¦   +-- urls.py
-¦   +-- wsgi.py
-¦
+ï¿½   +-- settings.py
+ï¿½   +-- urls.py
+ï¿½   +-- wsgi.py
+ï¿½
 +-- static/
-¦   +-- css/
-¦   +-- js/
-¦   +-- images/
-¦
+ï¿½   +-- css/
+ï¿½   +-- js/
+ï¿½   +-- images/
+ï¿½
 +-- templates/
-¦   +-- base.html
-¦
+ï¿½   +-- base.html
+ï¿½
 +-- manage.py
 +-- db.sqlite3
 +-- run_tests.py
@@ -159,35 +159,35 @@ http://127.0.0.1:8000/
 
 ### Home Page
 
-![Home Page](https://via.placeholder.com/1200x700.png?text=LifeOS+Home+Page)
+![Home Page](./screenshots/dashboard.png)
 
 ### Dashboard
 
-![Dashboard](https://via.placeholder.com/1200x700.png?text=LifeOS+Dashboard)
+![Dashboard](./screenshots/dashboard.png)
 
 ### Goals Page
 
-![Goals Page](https://via.placeholder.com/1200x700.png?text=LifeOS+Goals)
+![Goals Page](./screenshots/goals.png)
 
 ### Tasks Page
 
-![Tasks Page](https://via.placeholder.com/1200x700.png?text=LifeOS+Tasks)
+![Tasks Page](./screenshots/tasks.png)
 
 ### Habits Page
 
-![Habits Page](https://via.placeholder.com/1200x700.png?text=LifeOS+Habits)
+![Habits Page](./screenshots/habits.png)
 
 ### Reflection Journal
 
-![Reflection Journal](https://via.placeholder.com/1200x700.png?text=LifeOS+Reflection)
+![Reflection Journal](./screenshots/reflections.png)
 
 ### Reports Page
 
-![Reports Page](https://via.placeholder.com/1200x700.png?text=LifeOS+Reports)
+![Reports Page](./screenshots/reports.png)
 
 ### Admin Panel
 
-![Admin Panel](https://via.placeholder.com/1200x700.png?text=LifeOS+Admin+Panel)
+![Admin Panel](./screenshots/admin.png)
 
 ---
 
