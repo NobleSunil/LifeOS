@@ -1,4 +1,4 @@
-# LifeOS � Personal Productivity & Life Management System
+# LifeOS — Personal Productivity & Life Management System
 
 LifeOS is a personal productivity web application built with Django to help users organize their goals, manage daily tasks, track habits, reflect on their progress, and improve their lifestyle through consistent routines and measurable results.
 
@@ -10,9 +10,9 @@ It is designed for students, professionals, freelancers, and anyone who wants to
 
 LifeOS solves the common problem of losing focus and consistency by connecting:
 
-- Goals ? Tasks ? Progress
-- Habits ? Daily Logs ? Streaks
-- Reflections ? Self-review ? Growth
+- Goals → Tasks → Progress
+- Habits → Daily Logs → Streaks
+- Reflections → Self-review → Growth
 
 Instead of being just another to-do app, LifeOS helps users build a complete productivity system where every action contributes to long-term personal growth.
 
@@ -67,37 +67,41 @@ LifeOS helps users:
 
 ## Project Structure
 
-```bash
+```text
 LifeOS/
-�
-+-- lifeos_app/
-�   +-- models.py
-�   +-- views.py
-�   +-- forms.py
-�   +-- urls.py
-�   +-- templates/
-�
-+-- lifeos_project/
-�   +-- settings.py
-�   +-- urls.py
-�   +-- wsgi.py
-�
-+-- static/
-�   +-- css/
-�   +-- js/
-�   +-- images/
-�
-+-- templates/
-�   +-- base.html
-�
-+-- manage.py
-+-- db.sqlite3
-+-- run_tests.py
-+-- setup_db.py
-+-- LifeOS_Project_Documentation.md
-+-- README.md
-+-- .gitignore
-+-- requirements.txt
+├── lifeos_app/
+│   ├── models.py
+│   ├── views.py
+│   ├── forms.py
+│   └── urls.py
+├── lifeos_project/
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+├── static/
+│   ├── css/
+│   └── js/
+├── templates/
+│   ├── base.html
+│   ├── dashboard.html
+│   ├── goals.html
+│   ├── tasks.html
+│   ├── habits.html
+│   ├── reflections.html
+│   ├── reports.html
+│   └── admin_base.html
+├── screenshots/
+│   ├── dashboard.png
+│   ├── goals.png
+│   ├── tasks.png
+│   ├── habits.png
+│   ├── reflections.png
+│   ├── reports.png
+│   └── admin.png
+├── manage.py
+├── db.sqlite3
+├── run_tests.py
+└── README.md
 ```
 
 ---
@@ -157,15 +161,11 @@ http://127.0.0.1:8000/
 
 ## Screenshots
 
-### Home Page
-
-![Home Page](./screenshots/dashboard.png)
-
-### Dashboard
+### Productivity Dashboard
 
 ![Dashboard](./screenshots/dashboard.png)
 
-### Goals Page
+### Goals Management
 
 ![Goals Page](./screenshots/goals.png)
 
@@ -173,7 +173,7 @@ http://127.0.0.1:8000/
 
 ![Tasks Page](./screenshots/tasks.png)
 
-### Habits Page
+### Habit Tracker & Streaks
 
 ![Habits Page](./screenshots/habits.png)
 
@@ -181,11 +181,11 @@ http://127.0.0.1:8000/
 
 ![Reflection Journal](./screenshots/reflections.png)
 
-### Reports Page
+### Reports & Data Export
 
 ![Reports Page](./screenshots/reports.png)
 
-### Admin Panel
+### Admin Analytics Panel
 
 ![Admin Panel](./screenshots/admin.png)
 
@@ -278,5 +278,5 @@ This project is open-source and available for personal and educational use.
 
 ## Contact
 
-- GitHub: NobleSunil
-- Project: LifeOS
+- GitHub: [NobleSunil](https://github.com/NobleSunil)
+- Project: [LifeOS](https://github.com/NobleSunil/LifeOS)
